@@ -5,9 +5,11 @@ authors = []
 
 [addresses]
 legends_trade="_"
+owner="_"
 
 [dev-addresses]
 legends_trade="0x111"
+owner="0xcafe"
 
 [dependencies.AptosFramework]
 git = "https://github.com/aptos-labs/aptos-framework.git"
