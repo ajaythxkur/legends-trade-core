@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* @custom-variant dark (&:is(.dark *)); */
+@theme {
+  /* text */
+  --color-primary-text-color: #131412;
+  --color-secondary-text-color: #272A26;
+  --color-tertiary-text-color: #494D47;
+  --color-input-field-text-color: #494D47;
+  --color-action-text-color: #21351A;
+  --color-tertiary-action-text-color: #21351A;
+  --color-text-emphasis: #21351A;
+  --color-tag-text-color: #494D47;
+  --color-info-text: #2E52E5;
+  --color-negative-text: #870101;
+  --color-positive-text: #0F7D24;
+  --color-warning-text: #985804;
+
+  /* border */
+  --color-border-color: #494D47;
+  --color-primary-button-border-color: #21351A;
+  --color-secondary-button-border-color: #9FE878;
+  --color-tag-stroke-color: #494D47;
+
+  /* bg */
+  --color-primary-button-color: #9FE878;
+  --color-secondary-button-color: #E8FAD1;
+  --color-input-field-bg-color: #BDC6B6;
+  --color-bottom-layer-1: #ECF0EB;
+  --color-bottom-layer-2: #F9FFF5;
+  --color-card-bg: #ECF0EB;
+  --color-xl-card-bg: #F9FFF5;
+  --color-surface-info: #E4E9FE;
+  --color-surface-positive: #DEFCE3;
+  --color-surface-negative: #FDCCCC;
+  --color-surface-warning: #FFF7DD;
+  --color-mid-card: #E7F1DA;
+
+  /* Radius utilities */
+  /* --radius: 4px;
+  --radius-sm: calc(var(--radius) + 2px);
+  --radius-md: calc(var(--radius) + 4px);
+  --radius-lg: calc(var(--radius) + 12px);
+  --radius-xl: calc(var(--radius) + 20px); */
+
+  /* other */
+  --color-card-border-buy: #0F7D247A;
+  --color-card-border-sell: #7D0F0F7A;
+  --color-ido-countdown: #ECF0EBCC;
+  --color-ido-tabdetails: #ECF0EB4D;
+  --color-icons-bg: #F9FFF529;
+  --color-card-shadow: #1314121F;
+
+  --color-logo-symbol:#9FE878;
+  --color-logo-surface:#21351A;
+
+
+}
+
+[data-theme='dark'] {
+  /* text */
+  --color-primary-text-color: #FFFFFF;
+  --color-secondary-text-color: #E8FAD1;
+  --color-tertiary-text-color: #ECF0EB;
+  --color-input-field-text-color: #ECF0EB;
+  --color-action-text-color: #21351A;
+  --color-tertiary-action-text-color: #9FE878;
+  --color-text-emphasis: #9FE878;
+  --color-tag-text-color: #E8FAD1;
+  --color-info-text: #2E52E5;
+  --color-negative-text: #870101;
+  --color-positive-text: #0F7D24;
+  --color-warning-text: #985804;
+
+  /* border */
+  --color-border-color: #E8FAD1;
+  --color-primary-button-border-color: #F9FFF5;
+  --color-secondary-button-border-color: #9FE878;
+  --color-tag-stroke-color: #E8FAD1;
+
+  /* bg */
+  --color-primary-button-color: #9FE878;
+  --color-secondary-button-color: #E8FAD1;
+  --color-input-field-bg-color: #494D47;
+  --color-bottom-layer-1: #131412;
+  --color-bottom-layer-2: #272A26;
+  --color-card-bg: #494D47;
+  --color-xl-card-bg: #272A26;
+  --color-surface-info: #E4E9FE;
+  --color-surface-positive: #DEFCE3;
+  --color-surface-negative: #FDCCCC;
+  --color-surface-warning: #FFF7DD;
+  --color-mid-card: #576353;
+
+  /* other */
+  --color-card-border-buy: #0F7D247A;
+  --color-card-border-sell: #7D0F0F7A;
+  --color-ido-countdown: #ECF0EBCC;
+  --color-ido-tabdetails: #ECF0EB4D;
+  --color-icons-bg: #F9FFF529;
+  --color-card-shadow: #F9FFF52B;
+
+   --color-logo-symbol:#21351A;
+  --color-logo-surface:#9FE878;
+
+
+}
+
+/* @layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+} */
+
+
+
+
+/* Hide scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.ido-input {
+  @apply px-4 py-2 rounded w-full bg-card-bg text-input-field-text-color mt-2 focus:outline-none;
+}
+.ido-required {
+  @apply text-negative-text h-2 w-2;
+}
