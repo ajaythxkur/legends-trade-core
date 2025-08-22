@@ -28,11 +28,11 @@ module legends_trade::premarket {
         website: Option<String>,
         twitter: Option<String>,
         telegram: Option<String>,
-        chain_type: u64,
+        chain_type: u8,
         settle_duration: u64,
         settle_started_at: Option<u64>,
         fa: Option<Object<Metadata>>,
-        status: u64,
+        status: u8,
     }
 
     #[resource_group_member(group=aptos_framework::object::ObjectGroup)]
@@ -68,6 +68,7 @@ module legends_trade::premarket {
         twitter: Option<String>,
         telegram: Option<String>,
         settle_duration: u64,
+        chain_type: u8
     }
 
     #[event]
@@ -80,7 +81,7 @@ module legends_trade::premarket {
     struct TokenStatusUpdated has drop, store {
         token_addr: address,
         settle_started_at: u64,
-        status: u64
+        status: u8
     }
 
     #[event]
@@ -97,6 +98,7 @@ module legends_trade::premarket {
         is_buy: bool,
         is_full_match: bool,
         created_by: address,
+        collateral_asset: address,
         ts: u64
     }
     #[event]
@@ -113,7 +115,6 @@ module legends_trade::premarket {
         buyer: address,
         seller: address,
         amount: u64,
-        is_offer_filled: bool,
         created_by: address,
         ts: u64
     }
@@ -181,7 +182,7 @@ module legends_trade::premarket {
     /// Token premarket is not cancelled
     const ERR_TOKEN_STATUS_NOT_CANCELLED: u64 = 21;
 
-    const SEED: vector<u8> = b"premarket";
+    const SEED: vector<u8> = b"a";
     const BASIS_POINT_MAX: u64 = 10000;
 
     // This function is only called once
@@ -263,7 +264,7 @@ module legends_trade::premarket {
         config.fee_cancel = fee_cancel;
     }
 
-    public fun create_token(owner: &signer, name: String, symbol: String, image: String, website: Option<String>, twitter: Option<String>, telegram: Option<String>, chain_type: u64): Object<Token> acquires Config {
+    public fun create_token(owner: &signer, name: String, symbol: String, image: String, website: Option<String>, twitter: Option<String>, telegram: Option<String>, chain_type: u8): Object<Token> acquires Config {
         assert_config_initialized();
         // creator is owner
         let config = borrow_global_mut<Config>(get_config_addr());
@@ -294,12 +295,13 @@ module legends_trade::premarket {
             twitter,
             telegram,
             settle_duration: token.settle_duration,
+            chain_type
         });
         move_to(token_signer, token);
         object::object_from_constructor_ref(token_constructor_ref)
     }
 
-    public entry fun create_token_entry(owner: &signer, name: String, symbol: String, image: String, website: Option<String>, twitter: Option<String>, telegram: Option<String>, chain_type: u64) acquires Config {
+    public entry fun create_token_entry(owner: &signer, name: String, symbol: String, image: String, website: Option<String>, twitter: Option<String>, telegram: Option<String>, chain_type: u8) acquires Config {
         create_token(owner, name, symbol, image, website, twitter, telegram, chain_type);
     }
 
@@ -319,7 +321,8 @@ module legends_trade::premarket {
     public entry fun update_settle_duration(owner: &signer, token: Object<Token>, settle_duration: u64) acquires Config, Token {
         let config = borrow_global_mut<Config>(get_config_addr());
         assert!(config.owner == signer::address_of(owner), ERR_NOT_OWNER);
-        assert!(settle_duration >= 86400, ERR_SETTLE_DURATION_TOO_LOW);
+        // Uncomment on mainnet
+        // assert!(settle_duration >= 86400, ERR_SETTLE_DURATION_TOO_LOW);
         let token_addr = object::object_address(&token);
         let token = borrow_global_mut<Token>(token_addr);
         assert!(token.status == 0, ERR_TOKEN_STATUS_NOT_ACTIVE);
@@ -330,7 +333,7 @@ module legends_trade::premarket {
         });
     }
 
-    public entry fun update_token_status(owner: &signer, token: Object<Token>, status: u64) acquires Config, Token {
+    public entry fun update_token_status(owner: &signer, token: Object<Token>, status: u8) acquires Config, Token {
         let config = borrow_global_mut<Config>(get_config_addr());
         assert!(config.owner == signer::address_of(owner), ERR_NOT_OWNER);
         let token_addr = object::object_address(&token);
@@ -410,6 +413,7 @@ module legends_trade::premarket {
             is_buy,
             is_full_match,
             created_by: signer::address_of(sender),
+            collateral_asset: object::object_address(&collateral_asset),
             ts: timestamp::now_seconds()
         });
         object::object_from_constructor_ref<Offer>(offer_constructor_ref)
@@ -463,7 +467,7 @@ module legends_trade::premarket {
         let offer_addr = object::object_address(&offer_obj);
         let offer = borrow_global_mut<Offer>(offer_addr);
         let remaining_amount = offer.amount - offer.filled_amount;
-        assert!(remaining_amount <= amount, ERR_INSUFFICIENT_REMAINING_AMOUNT);
+        assert!(remaining_amount >= amount, ERR_INSUFFICIENT_REMAINING_AMOUNT);
         if(offer.is_full_match) {
             assert!(amount == remaining_amount, ERR_INSUFFICIENT_FULL_MATCH_AMOUNT)
         };
@@ -507,7 +511,6 @@ module legends_trade::premarket {
             buyer,
             seller,
             amount,
-            is_offer_filled: offer.filled_amount == offer.amount,
             created_by: signer::address_of(sender),
             ts: timestamp::now_seconds()
         });
@@ -616,7 +619,7 @@ module legends_trade::premarket {
     }
 
     // either buyer or seller cancel the order, Only when token is cancelled, status is updated for both
-    public entry fun cancel_order(sender: &signer, order_obj: Object<Order>) acquires Order, Token {
+    public entry fun cancel_order_entry(sender: &signer, order_obj: Object<Order>) acquires Order, Token {
         let order_addr = object::object_address(&order_obj);
         let Order {
             token: token_obj,

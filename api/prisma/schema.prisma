@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PremarketToken {
+  token_addr        String    @id @map("token_addr")
+  name              String
+  symbol            String
+  website           String?
+  twitter           String?
+  telegram          String?
+  settle_duration   BigInt
+  temp_starts_at    DateTime?
+  temp_ends_at      DateTime?
+  settle_started_at BigInt?
+  status            Int       @default(0)
+  fa                String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  offers PremarketOffer[]
+  orders PremarketOrder[]
+
+  @@map("premarket_tokens")
+}
+
+model PremarketOffer {
+  offer_addr    String  @id @map("offer_addr")
+  token_addr    String
+  price         BigInt
+  amount        BigInt
+  is_buy        Boolean
+  is_full_match Boolean
+  created_by    String
+  ts            BigInt
+  filled_amount BigInt
+  is_active     Boolean @default(true)
+
+  // Relations
+  token  PremarketToken   @relation(fields: [token_addr], references: [token_addr])
+  orders PremarketOrder[]
+
+  @@map("premarket_offers")
+}
+
+model PremarketOrder {
+  order_addr      String  @id @map("order_addr")
+  token_addr      String
+  offer_addr      String
+  buyer           String
+  seller          String
+  amount          BigInt
+  created_by      String
+  ts              BigInt
+  is_settled      Boolean @default(false)
+  is_claimed      Boolean @default(false)
+
+  // Relations
+  token PremarketToken @relation(fields: [token_addr], references: [token_addr])
+  offer PremarketOffer @relation(fields: [offer_addr], references: [offer_addr])
+
+  @@map("premarket_orders")
+}

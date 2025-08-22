@@ -7,19 +7,19 @@ module legends_trade::chain_type {
     /// Asset specified as collateral asset is not valid
     const ERR_INVALID_ASSET: u64 = 1;
 
-    const APTOS: u64 = 0;
-    const SOLANA: u64 = 1;
-    const ETHEREUM: u64 = 2;
+    const APTOS: u8 = 0;
+    const SOLANA: u8 = 1;
+    const ETHEREUM: u8 = 2;
 
-    const APTOS_FA: address = @0xa;
-    const USDC_FA: address = @0x11;
-    const USDT_FA: address = @0x12;
+    const APTOS_FA: address = @0x000000000000000000000000000000000000000000000000000000000000000a;
+    const USDC_FA: address = @0x043c15fa536d4e2fbab7b8308b884a6b6cc54d7d4d2d67d6898a0e9374fe7fd3;
+    const USDT_FA: address = @0xa90ebedc1b089258450f2ac76cdcbb6348785cd6aa9916063017f77501cb14b6;
 
-    public fun assert_valid_chain_type(type: u64) {
+    public fun assert_valid_chain_type(type: u8) {
         assert!(type == APTOS || type == SOLANA || type == ETHEREUM, ERR_INVALID_CHAIN_TYPE);
     }
 
-    public fun assert_valid_chain_asset(asset: Object<Metadata>, type: u64) {
+    public fun assert_valid_chain_asset(asset: Object<Metadata>, type: u8) {
         assert_valid_chain_type(type);
         let asset_addr = object::object_address(&asset);
         if(type == 0) {
