@@ -5,9 +5,10 @@ import { setupAutomaticEthereumWalletDerivation } from "@aptos-labs/derived-wall
 import { setupAutomaticSolanaWalletDerivation } from "@aptos-labs/derived-wallet-solana";
 import { PropsWithChildren } from "react";
 import { Network } from "@aptos-labs/ts-sdk";
+
 // import { useClaimSecretKey } from "@/hooks/useClaimSecretKey";
-// import { useAutoConnect } from "./AutoConnectProvider";
-// import { useToast } from "./ui/use-toast";
+import { useAutoConnect } from "./AutoConnectProvider";
+import {toast} from "sonner"
 
 setupAutomaticEthereumWalletDerivation({ defaultNetwork: Network.TESTNET });
 setupAutomaticSolanaWalletDerivation({ defaultNetwork: Network.TESTNET });
@@ -18,15 +19,14 @@ if (typeof window !== "undefined") {
 }
 
 export const WalletProvider = ({ children }: PropsWithChildren) => {
-//   const { autoConnect } = useAutoConnect();
-//   const { toast } = useToast();
+  const { autoConnect } = useAutoConnect();
 
   // Enables claim flow when the `claim` query param is detected
 //   const claimSecretKey = useClaimSecretKey();
 
   return (
     <AptosWalletAdapterProvider
-      autoConnect={false}
+      autoConnect={true}
       dappConfig={{
         network: Network.TESTNET,
         aptosApiKeys: {
@@ -45,11 +45,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         crossChainWallets: true,
       }}
       onError={(error) => {
-        // toast({
-        //   variant: "destructive",
-        //   title: "Error",
-        //   description: error || "Unknown wallet error",
-        // });
+        toast.error(`${error || "unknown wallet error"} `)
       }}
     >
       {children}

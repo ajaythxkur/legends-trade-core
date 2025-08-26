@@ -4,8 +4,13 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import CreateOfferModal from "./offermodal"
 import { FiPlus } from "react-icons/fi"
+import { Token } from "@/types/premarket"
+interface ModalDemoProps{
+    token:Token;
+    tokenAddr:string;
+}
 
-export default function ModalDemo() {
+export default function ModalDemo({token, tokenAddr}:ModalDemoProps) {
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     return (
@@ -15,7 +20,7 @@ export default function ModalDemo() {
                 <span className="hidden sm:block">Create Offer</span>
                 <FiPlus className="h-3 w-3"/>
             </Button>
-            <CreateOfferModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            <CreateOfferModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} token={token} tokenAddr={tokenAddr}/>
         </>
     )
 }

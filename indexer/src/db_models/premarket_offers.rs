@@ -37,8 +37,8 @@ pub struct PremarketOfferCreatedOnChain {
 impl PremarketOfferCreatedOnChain {
        pub fn to_db_offer(&self, txn_version: i64) -> PremarketOffer {
         PremarketOffer {
-            token_addr: standardize_address(&self.offer_addr), 
-            offer_addr: standardize_address(&self.token_addr),
+            offer_addr: standardize_address(&self.offer_addr),
+            token_addr: standardize_address(&self.token_addr), 
             price: self.price.parse().unwrap_or(0),
             amount: self.amount.parse().unwrap_or(0),
             created_by: standardize_address(&self.created_by),

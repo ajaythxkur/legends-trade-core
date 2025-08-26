@@ -15,6 +15,7 @@ model PremarketToken {
   token_addr        String    @id @map("token_addr")
   name              String
   symbol            String
+  image             String
   website           String?
   twitter           String?
   telegram          String?
@@ -23,9 +24,11 @@ model PremarketToken {
   temp_ends_at      DateTime?
   settle_started_at BigInt?
   status            Int       @default(0)
+  chain_type        Int
   fa                String?
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
+  txn_version       Int
 
   // Relations
   offers PremarketOffer[]
@@ -45,6 +48,7 @@ model PremarketOffer {
   ts            BigInt
   filled_amount BigInt
   is_active     Boolean @default(true)
+  collateral_asset String
 
   // Relations
   token  PremarketToken   @relation(fields: [token_addr], references: [token_addr])

@@ -24,7 +24,7 @@ import {
   User,
 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Button } from "./ui/Button";
+import { Button } from "./ui/button";
 import {
   Collapsible,
   CollapsibleContent,

@@ -1,6 +1,6 @@
 
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { H5, H6, PExtraSmall, PLarge, PSmall } from '@/components/ui/typography';
 import { FaXTwitter } from 'react-icons/fa6';
@@ -16,36 +16,19 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TabsContent } from '@radix-ui/react-tabs';
 import Filters from './filters';
 import CreateOrder from './createorder';
+import { backendUrl } from '@/utils/env';
+import { Token, TokenOffers } from '@/types/premarket';
 
 interface BodyProps {
-    id: string;
+    tokenAddr: string;
 }
-export default function Body({ id }: BodyProps) {
+export default function Body({ tokenAddr }: BodyProps) {
     const { openDrawer } = useDrawer();
     const [filters, setFilters] = useState({
         floorPrice: '0.8 - 0.87',
         sol: true,
         full: true
     });
-
-    // Mock data for offers
-    const buyoffers = Array(15).fill(null).map((_, index) => ({
-        id: index + 1,
-        offer: 500,
-        rate: 0.210,
-        for: 500,
-        price: 10.50,
-        type: 'FULL'
-    }));
-
-    const selloffers = Array(15).fill(null).map((_, index) => ({
-        id: index + 1,
-        offer: 500,
-        rate: 0.210,
-        for: 500,
-        price: 10.50,
-        type: 'FULL'
-    }));
 
     const removeFilter = (filterType: string) => {
         setFilters(prev => ({
@@ -54,16 +37,55 @@ export default function Body({ id }: BodyProps) {
         }));
     };
 
+    const [offers, setOffers] = useState<TokenOffers[]>([]);
+    const [tokenInfo, setTokenInfo] = useState<Token>();
+    const getTokenInfo = async () => {
+        try {
+            const response = await fetch(`${backendUrl}/premarket/token/${tokenAddr}`);
+            const data = await response.json();
+            setTokenInfo(data);
+            console.log("Fetched tokenInfo:", data);
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    const getOffers = async () => {
+        try {
+            const response = await fetch(`${backendUrl}/premarket/offers/${tokenAddr}`);
+            const data = await response.json();
+            setOffers(data);
+            console.log(`Token offers: ${data}`)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    useEffect(() => {
+        getTokenInfo();
+        getOffers();
+    }, [])
+    const buyOffers = offers.filter((f) => f.is_buy === true);
+    const sellOffers = offers.filter((f) => f.is_buy === false);
+
+    // console.log(tokenAddr)
+
+    if (!tokenInfo) return null;
     return (
         <>
             {/* Header */}
             <div className="md:border-b border-border-color md:pb-4">
                 <div className="flex flex-wrap xl:flex-nowrap items-center justify-between text-primary-text-color">
                     <div className="flex items-center gap-3">
-                        <Image src="/media/token-img.png" alt="token-image" width={50} height={50} className="rounded-full" />
+                        <div className="relative">
+                            <Image src="/media/token-img.png" alt="token-image" width={50} height={50} className="rounded-full" />
+                            {
+                                tokenInfo.chain_type === 0 &&
+                                <Image src="/media/aptos.svg" alt="token-image" width={42} height={42} className="h-5 w-5  rounded-full absolute bottom-0 right-0" />
+                            }
+                        </div>
                         <div>
-                            <H5>CTK {id}</H5>
-                            <PExtraSmall className="text-tertiary-text-color mt-1.5">CryptoKitty</PExtraSmall>
+                            <H5>{tokenInfo.symbol}</H5>
+                            <PExtraSmall className="text-tertiary-text-color mt-1.5">{tokenInfo.name}</PExtraSmall>
                         </div>
                     </div>
 
@@ -104,8 +126,8 @@ export default function Body({ id }: BodyProps) {
 
                     {/* Social */}
                     <div className="flex items-center gap-1 md:gap-3  pt-4 md:pt-0">
-                        <Link href="#" className="p-1 md:p-2 hover:bg-card-bg rounded-full cursor-pointer"><FaXTwitter className='h-5 w-5' /></Link>
-                        <Link href="#" className="p-1 md:p-2 hover:bg-card-bg rounded-full cursor-pointer"><LuGlobe className='h-5 w-5' /></Link>
+                        {tokenInfo.twitter && <Link href={`${tokenInfo.twitter}`} className="p-1 md:p-2 hover:bg-card-bg rounded-full cursor-pointer"><FaXTwitter className='h-5 w-5' /></Link>}
+                        {tokenInfo.website && <Link href={`${tokenInfo.website}`} className="p-1 md:p-2 hover:bg-card-bg rounded-full cursor-pointer"><LuGlobe className='h-5 w-5' /></Link>}
                     </div>
                 </div>
             </div>
@@ -131,7 +153,7 @@ export default function Body({ id }: BodyProps) {
 
                             <div className="space-y-0 lg:space-y-4 flex lg:flex-col items-end gap-4 lg:gap-0 ">
                                 {/* ----------------Create Offer Modal---------------- */}
-                                <CreateOfferModal />
+                                <CreateOfferModal token={tokenInfo} tokenAddr={tokenAddr} />
 
                                 {/* ----------------Filters---------------- */}
                                 <Filters />
@@ -146,62 +168,77 @@ export default function Body({ id }: BodyProps) {
 
                         <TabsContent value="buy">
                             <div className="grid gap-4 md:gap-6 grid-cols-1 md:[grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]">
-                                {buyoffers.map((offer) => (
-                                    <div key={offer.id} className="bg-card-bg rounded-lg px-4 py-5 border-2 border-card-border-buy flex flex-col" >
-                                        <div className="flex justify-between items-start mb-4 text-secondary-text-color">
-                                            <div className="text-start">
-                                                <PSmall>Offer</PSmall>
-                                                <div className="flex gap-1 items-center mt-2">
-                                                    <Image src="/media/token-image.svg" alt="token-image" width={20} height={20} className="rounded-full" />
-                                                    <PLarge className='text-primary-text-color'>500</PLarge>
+                                {buyOffers.map((offer, i) => {
+                                    const aptPrice = 5;
+                                    const amount = Number(offer.amount) / 10000;
+                                    const price = (Number(offer.price) / Math.pow(10, 8)) * aptPrice
+                                    const collateralInUsd = amount * price
+                                    const collateral = collateralInUsd / aptPrice
+
+                                    return (
+                                        <div key={i} className="bg-card-bg rounded-lg px-4 py-5 border-2 border-card-border-buy flex flex-col" >
+                                            <div className="flex justify-between items-start mb-4 text-secondary-text-color">
+                                                <div className="text-start">
+                                                    <PSmall>Offer</PSmall>
+                                                    <div className="flex gap-1 items-center mt-2">
+                                                        <Image src="/media/token-image.svg" alt="token-image" width={20} height={20} className="rounded-full" />
+                                                        <PLarge className='text-primary-text-color'>{amount}</PLarge>
+                                                    </div>
+                                                    {/* <PExtraSmall className="text-tertiary-text-color mt-2">$ {offer.price}</PExtraSmall> */}
                                                 </div>
-                                                <PExtraSmall className="text-tertiary-text-color mt-2">$ {offer.price}</PExtraSmall>
+
+                                                <div className="text-center">
+                                                    <PExtraSmall className="text-tertiary-text-color">Rate</PExtraSmall>
+                                                    <Badge variant="info">$ {price}</Badge>
+                                                    <div className="mt-4 flex justify-center">
+                                                        <PremarketSvg className="text-secondary-text-color" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="text-end">
+                                                    <PSmall>For</PSmall>
+                                                    <div className="flex gap-2 items-center mt-2">
+                                                        {
+                                                            tokenInfo.chain_type === 0 ?
+                                                                <Image src="/media/aptos.svg" alt="token-image" width={20} height={20} className="rounded-full" />
+                                                                :
+                                                                <Image src="/media/token-image.svg" alt="token-image" width={20} height={20} className="rounded-full" />
+                                                        }
+                                                        <PLarge className='text-primary-text-color'>{collateral}</PLarge>
+                                                    </div>
+                                                    <PExtraSmall className="text-tertiary-text-color mt-2">$ {collateralInUsd}</PExtraSmall>
+                                                </div>
                                             </div>
 
-                                            <div className="text-center">
-                                                <PExtraSmall className="text-tertiary-text-color">Rate</PExtraSmall>
-                                                <Badge variant="info">$ {offer.rate}</Badge>
-                                                <div className="mt-4 flex justify-center">
-                                                    <PremarketSvg className="text-secondary-text-color" />
-                                                </div>
-                                            </div>
-
-                                            <div className="text-end">
-                                                <PSmall>For</PSmall>
-                                                <div className="flex gap-2 items-center mt-2">
-                                                    <Image src="/media/token-image.svg" alt="token-image" width={20} height={20} className="rounded-full" />
-                                                    <PLarge className='text-primary-text-color'>500</PLarge>
-                                                </div>
-                                                <PExtraSmall className="text-tertiary-text-color mt-2">$ {offer.price}</PExtraSmall>
+                                            <div className="flex items-center justify-between">
+                                                <Badge variant='outline' className='text-xs py-2 px-3'>{offer.is_full_match ? 'Full' : 'Partial'}</Badge>
+                                                <Button size="md" onClick={() => openDrawer(<CreateOrder type="buy" />)}>Buy</Button>
                                             </div>
                                         </div>
+                                    )
+                                }
 
-                                        <div className="flex items-center justify-between">
-                                            <Badge variant='outline' className='text-xs py-2 px-3'>{offer.type}</Badge>
-                                            <Button size="md" onClick={() => openDrawer(<CreateOrder type="buy" />)}>Buy</Button>
-                                        </div>
-                                    </div>
-                                ))}
+                                )}
                             </div>
                         </TabsContent>
 
                         <TabsContent value="sell">
-                                <div className="grid gap-4 md:gap-6 grid-cols-1 md:[grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]">
-                                {selloffers.map((offer) => (
-                                    <div key={offer.id} className="bg-card-bg rounded-lg px-4 py-5 border-2 border-card-border-sell flex flex-col" >
+                            <div className="grid gap-4 md:gap-6 grid-cols-1 md:[grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]">
+                                {sellOffers.map((offer, i) => (
+                                    <div key={i} className="bg-card-bg rounded-lg px-4 py-5 border-2 border-card-border-sell flex flex-col" >
                                         <div className="flex justify-between items-start mb-4 text-secondary-text-color">
                                             <div className="text-start">
                                                 <PSmall>Offer</PSmall>
                                                 <div className="flex gap-1 items-center mt-2">
                                                     <Image src="/media/token-image.svg" alt="token-image" width={20} height={20} className="rounded-full" />
-                                                    <PLarge className='text-primary-text-color'>500</PLarge>
+                                                    <PLarge className='text-primary-text-color'>{offer.amount}</PLarge>
                                                 </div>
                                                 <PExtraSmall className="text-tertiary-text-color mt-2">$ {offer.price}</PExtraSmall>
                                             </div>
 
                                             <div className="text-center">
                                                 <PExtraSmall className="text-tertiary-text-color">Rate</PExtraSmall>
-                                                <Badge variant="info">$ {offer.rate}</Badge>
+                                                {/* <Badge variant="info">$ {offer.rate}</Badge> */}
                                                 <div className="mt-4 flex justify-center">
                                                     <PremarketSvg className="text-secondary-text-color" />
                                                 </div>
@@ -217,7 +254,7 @@ export default function Body({ id }: BodyProps) {
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <Badge variant='outline' className='text-xs py-2 px-3'>{offer.type}</Badge>
+                                            <Badge variant='outline' className='text-xs py-2 px-3'>{offer.is_full_match ? 'Full' : 'Partial'}</Badge>
                                             <Button size="md" onClick={() => openDrawer(<CreateOrder type="sell" />)}>Sell</Button>
                                         </div>
                                     </div>

@@ -1,11 +1,18 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+
+
+import premarketRoutes from './routes/premarketRoutes.js'
 
 const app = new Hono()
+app.use("/*", cors({ origin: "http://localhost:3000" }))
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+// app.get('/', (c) => {
+//   return c.text('Hello Hono!')
+// })
+
+app.route("/premarket", premarketRoutes);
 
 serve({
   fetch: app.fetch,

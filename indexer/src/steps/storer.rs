@@ -164,7 +164,7 @@ impl Processable for Storer {
             premarket_token_fa_updated_events,
         )
         .await?;
-
+        
         process_premarket_offer_created_events(
              self.pool.clone(),
             per_table_chunk_sizes.clone(),

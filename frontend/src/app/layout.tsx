@@ -6,6 +6,7 @@ import { ThemeProvider } from 'next-themes'
 import { DrawerProvider } from '../contexts/DrawerContext';
 import { WalletProvider } from "@/components/WalletProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { AutoConnectProvider } from "@/components/AutoConnectProvider";
 export const metadata: Metadata = {
   title: "Legends Trade",
   description: "legends trade",
@@ -20,11 +21,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${font.className}`} >
         <ThemeProvider>
-          <WalletProvider>
-            <DrawerProvider>
-              {children}
-            </DrawerProvider>
-          </WalletProvider>
+          <AutoConnectProvider>
+            <WalletProvider>
+              <DrawerProvider>
+                {children}
+              </DrawerProvider>
+            </WalletProvider>
+          </AutoConnectProvider>
         </ThemeProvider>
         <Toaster />
       </body>

@@ -1,7 +1,7 @@
 import Body from "./Body";
 
-export default async function PremarketTokenPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function PremarketTokenPage({ params }: { params: Promise<{ tokenid: string }> }) {
+  const { tokenid } = await params;
 
-  return <Body id={id} />;
+  return <Body tokenAddr={tokenid} />;
 }

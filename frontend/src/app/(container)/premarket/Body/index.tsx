@@ -1,9 +1,29 @@
+'use client'
 // import Network from "@/components/network";
 import { H4, PSmall } from "@/components/ui/typography";
 import TokensGrid from "./grid";
 import { LuSearch } from "react-icons/lu";
+import { useEffect, useState } from "react";
+import { backendUrl } from "@/utils/env";
+import { Token } from "@/types/premarket";
+
+
 
 export default function Body() {
+    const [tokens, setTokens] = useState<Token[]>([]);
+    const getTokens = async () => {
+        try {
+            const response = await fetch(`${backendUrl}/premarket/tokens`);
+            const data = await response.json();
+            setTokens(data);
+            console.log(`Tokens: ${data}`);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    useEffect(() => {
+        getTokens()
+    }, [])
     return (
         <>
             <div className="flex flex-wrap lg:flex-nowrap gap-3 md:gap-5 lg:gap-0 justify-between">
@@ -25,7 +45,7 @@ export default function Body() {
                 </div>
             </div>
 
-            <TokensGrid />
+            <TokensGrid tokens={tokens}/>
         </>
     )
 }

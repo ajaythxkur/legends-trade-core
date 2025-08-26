@@ -1,10 +1,11 @@
 'use client';
 import BreadCrumb from "@/components/breadcrumb";
-import ConnectWallet from "@/components/connectwallet";
+// import ConnectWallet from "@/components/connectwallet";
 import Network from "@/components/network";
 import Sidebar from "@/components/sidebar";
 import { useDrawer } from '../../contexts/DrawerContext';
 import Logo from "@/components/icons/logo";
+import { WalletSelector } from "@/components/connectwallet";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const { isVisible, drawerContent } = useDrawer();
@@ -28,7 +29,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         </div>
                         <div className="flex gap-4 items-center">
                             <Network />
-                            <ConnectWallet />
+                            {/* <ConnectWallet /> */}
+                            <WalletSelector />
                         </div>
                     </div>
                     {/* mobile */}

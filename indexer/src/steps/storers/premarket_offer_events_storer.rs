@@ -24,6 +24,7 @@ async fn execute_offer_created_events_sql(
                 .on_conflict(premarket_offers::offer_addr)
                 .do_nothing();
             create_offers_query.execute(conn).await?;
+
             Ok(())
         })
     })
