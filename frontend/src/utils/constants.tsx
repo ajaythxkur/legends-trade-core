@@ -50,5 +50,4 @@ export const manageOrder = [
         status: 'Settled',
         action: 'view'
     }
-
 ];

@@ -5,7 +5,13 @@ import Image from "next/image"
 import { IoIosArrowForward } from "react-icons/io"
 import TradesDrawer from "./tradesdrawer";
 import CircularProgress from "@/components/ui/circular-progress";
-export default function Trades() {
+import { Token, TokenOffers } from "@/types/premarket";
+import { truncateAddress } from "@aptos-labs/ts-sdk";
+interface TradesProps {
+    offers: TokenOffers[]
+    tokenInfo: Token;
+}
+export default function Trades({ offers, tokenInfo }: TradesProps) {
     const { openDrawer } = useDrawer();
     return (
         <Table>
@@ -23,49 +29,73 @@ export default function Trades() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {Array.from({ length: 10 }).map((_, index) => {
-                    return (
-                        <TableRow key={index} onClick={() => openDrawer(<TradesDrawer tradetype="buy" />)} className="cursor-pointer hover:bg-card-bg">
-                            <TableCell>
-                                <span className="flex gap-2 items-center">
-                                    <div className="h-4 w-4 bg-positive-text rounded-full"></div>
-                                    {/* bg-negative-text  for Failed*/}
-                                    {/* bg-warning-text  for pending*/}
-                                    #55D515
-                                </span>
-                            </TableCell>
-                            <TableCell className="text-center ">
-                                <Badge variant="outline">Buy</Badge>
-                            </TableCell>
-                            <TableCell className="text-center">$ 1.25</TableCell>
-                            <TableCell className="text-center">1000</TableCell>
-                            <TableCell>
-                                <span className="flex gap-2 justify-center items-center">11
-                                    <Image src="/media/aptos.svg" alt="coll-icon" height={20} width={20} />
-                                </span>
-                            </TableCell>
+                {
+                    offers.map((offer, index) => {
+                        const aptPrice = 5;
+                        const amount = Number(offer.amount) / 10000;
+                        const price = (Number(offer.price) / Math.pow(10, 8)) * aptPrice
+                        const collateralInUsd = amount * price
+                        const collateral = collateralInUsd / aptPrice
 
-                            <TableCell className="text-center py-2.5">
+                        // const filledPercentage = ( Number(offer.filled_amount) / Number(offer.amount))  * 100
+                        const filledPercentage = (1 / amount) * 100;
 
-                                <div className="text-center">
-                                    <CircularProgress percentage={20} size="sm" color="purple" />
-                                </div>
-                            </TableCell>
-                            <TableCell className="text-center">1/1</TableCell>
-                            <TableCell className="text-center">
-                                <Badge variant="positive">Done</Badge>
-                                {/* variant="negative"  for failed*/}
-                                {/* variant="warning"  for pending*/}
-                            </TableCell>
-                            <TableCell className="text-end">
-                                <IoIosArrowForward
-                                    className="h-5 w-5 ms-auto text-tertiary-action-text-color cursor-pointer"
-                                    onClick={() => openDrawer(<TradesDrawer tradetype="buy" />)}
+
+                        return (
+                            <TableRow key={index} onClick={() => openDrawer(
+                                <TradesDrawer
+                                    offer={offer}
+                                    orders={offer.orders}
+                                    tokenInfo={tokenInfo}
                                 />
-                            </TableCell>
-                        </TableRow>
-                    )
-                })}
+
+                            )} className="cursor-pointer hover:bg-card-bg">
+                                <TableCell>
+                                    <span className="flex gap-2 items-center">
+                                        <div className="h-4 w-4 bg-positive-text rounded-full"></div>
+                                        {truncateAddress(offer.offer_addr)}
+                                    </span>
+                                </TableCell>
+                                <TableCell className="text-center ">
+                                    <Badge variant="outline"> {offer.is_buy ? 'Buy' : 'Sell'}</Badge>
+                                </TableCell>
+                                <TableCell className="text-center">$ {price}</TableCell>
+                                <TableCell className="text-center">
+                                    <span className="flex gap-2 justify-center items-center">
+                                        <span>{amount}</span>
+                                        <Image src={tokenInfo.image} alt="coll-icon" height={20} width={20} className="rounded-full" />
+                                    </span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="flex gap-2 justify-center items-center">{collateral}
+                                        <Image src="/media/aptos.svg" alt="coll-icon" height={20} width={20} />
+                                    </span>
+                                </TableCell>
+
+                                <TableCell className="text-center py-2.5">
+
+                                    <div className="text-center">
+                                        <CircularProgress percentage={filledPercentage} size="sm" color="purple" />
+                                        <p>{filledPercentage}%</p>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-center">{offer.orders.filter((o) => o.is_settled).length}/{offer.orders.length}</TableCell>
+                                <TableCell className="text-center">
+                                    {
+                                        offer.filled_amount === offer.amount ?
+                                            <Badge variant="info">Filled</Badge>
+                                            :
+                                            <Badge variant="positive">Active</Badge>
+                                    }
+                                </TableCell>
+                                <TableCell className="text-end">
+                                    <IoIosArrowForward
+                                        className="h-5 w-5 ms-auto text-tertiary-action-text-color cursor-pointer"
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        )
+                    })}
             </TableBody>
         </Table>
     )

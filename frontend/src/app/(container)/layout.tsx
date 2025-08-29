@@ -28,7 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             <BreadCrumb />
                         </div>
                         <div className="flex gap-4 items-center">
-                            <Network />
+                            {/* <Network /> */}
                             {/* <ConnectWallet /> */}
                             <WalletSelector />
                         </div>

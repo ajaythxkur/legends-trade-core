@@ -15,7 +15,7 @@ export default function Network() {
     const networks = [
         { name: "Aptos", value: "aptos", icon: "/media/aptos.svg" },
         { name: "Solana", value: "solana", icon: "/media/token-img.png" },
-        { name: "Movement", value: "movement", icon: "/media/token-img.png" },
+        { name: "Ethereum", value: "ethereum", icon: "/media/token-img.png" },
     ]
 
     const [selectedNetwork, setSelectedNetwork] = useState<string>("aptos")
@@ -42,7 +42,7 @@ export default function Network() {
                                 key={network.value}
                                 value={network.value}
                                 // disabled={network.value === "movement"}
-                                disabled={["movement", "solana"].includes(network.value)}
+                                disabled={["ethereum", "solana"].includes(network.value)}
                                 className="py-2 px-6 hover:bg-card-bg flex gap-2 items-center cursor-pointer"
                             >
                                 <Image src={network.icon} alt="token-icon" height={20} width={20} className="rounded-full" />

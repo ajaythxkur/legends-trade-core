@@ -6,8 +6,15 @@ const nextConfig: NextConfig = {
     NETWORK: process.env.NETWORK,
     BACKEND_URL: process.env.BACKEND_URL,
     MODULE_ADDRESS: process.env.MODULE_ADDRESS
-
-  }
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'pbs.twimg.com',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
