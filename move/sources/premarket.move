@@ -522,7 +522,7 @@ module legends_trade::premarket {
         create_order(sender, offer_obj, amount);
     }
 
-    public fun settle_order_entry(sender: &signer, order_obj: Object<Order>) acquires Order, Token, Config {
+    public entry fun settle_order_entry(sender: &signer, order_obj: Object<Order>) acquires Order, Token, Config {
         assert_config_initialized();
         // seller settles the order
         let order_addr = object::object_address(&order_obj);
