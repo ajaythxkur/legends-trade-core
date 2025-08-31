@@ -6,14 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { LuGlobe } from 'react-icons/lu';
 import Filters from './filters';
-import Trades from './trades';
-import { useEffect, useState } from 'react';
-import { backendUrl } from '@/utils/env';
-import { Token, TokenOffers, TokenOrder } from '@/types/premarket';
+import { useCallback, useEffect, useState } from 'react';
+import { Token, TokenOffers } from '@/types/premarket';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import dayjs from 'dayjs'
 import duration from "dayjs/plugin/duration";
 import CountDownBadge from '@/components/CountDownBadge';
+import backendApi from '@/utils/backendApi';
+import SpinnerLoading from '@/components/SpinnerLoading';
+import Empty from '@/components/Empty';
+import Offers from './Offers';
+import PaginationNew from '@/components/PaginationNew';
 dayjs.extend(duration);
 
 export default function Body({ id }: { id: string }) {
@@ -21,25 +24,46 @@ export default function Body({ id }: { id: string }) {
 
     const [tokenInfo, setTokenInfo] = useState<Token>();
     const [offers, setoffers] = useState<TokenOffers[]>([])
+    const [offerType, setOfferType] = useState('all')
+    const [offerStatus, setOfferStatus] = useState('all');
+    const [offset, setOffset] = useState(0)
+    const [total, setTotal] = useState(0)
+    const [loading, setLoading] = useState(false)
 
-    const getUserOffers = async () => {
-        if (!account) return;
+    const getTokenInfo = async () => {
         try {
-            const res = await fetch(`${backendUrl}/dashboard/token_offers/${account.address}/${id}`);
-            const data = await res.json();
-            setTokenInfo(data.token)
-            setoffers(data.offers)
-        }
-        catch (err) {
+            const response = await backendApi.getTokenInfo(id)
+            setTokenInfo(response.data[0])
+        } catch (err) {
             console.log(err)
         }
     }
-    useEffect(() => {
-        getUserOffers();
-    }, [account])
 
-    if (!isLoading && !account) return <div>connect wallet</div>
-    if (!tokenInfo) return <div>Loading...</div>;
+    const getUserOffersData = useCallback(async () => {
+        if (!account) return;
+        setLoading(true)
+        try {
+            const response = await backendApi.getUserOffersData(id, String(account.address), offerStatus, offerType, offset, 10)
+            setoffers(response.data.offers)
+            setTotal(response.data.total)
+        }
+        catch (err) {
+            console.log(err)
+        } finally {
+            setLoading(false)
+        }
+    }, [account, offerStatus, offerType, offset])
+
+    useEffect(() => {
+        getTokenInfo();
+    }, [])
+
+    useEffect(() => {
+        getUserOffersData();
+    }, [getUserOffersData])
+
+    if (isLoading || !tokenInfo) return <SpinnerLoading />;
+    if (!isLoading && !account) return <Empty title="Wallet not connected" />
 
     const aptPrice = 5; //in used
     const lastprice = (tokenInfo.lastPrice / Math.pow(10, 8)) * aptPrice;
@@ -132,12 +156,18 @@ export default function Body({ id }: { id: string }) {
                     <H4>My Pre-Market Trades</H4>
                     <PSmall className='underline'>How it works ?</PSmall >
                 </div>
-                <Filters />
+                <Filters
+                    offerType={offerType}
+                    setOfferType={setOfferType}
+                    offerStatus={offerStatus}
+                    setOfferStatus={setOfferStatus}
+                />
             </div>
 
             {/* Trades table */}
             <div className="mt-6">
-                <Trades offers={offers} tokenInfo={tokenInfo} />
+                <Offers offers={offers} tokenInfo={tokenInfo} />
+                <PaginationNew offset={offset} setOffset={setOffset} loading={loading} total={total} />
             </div>
         </>
     )

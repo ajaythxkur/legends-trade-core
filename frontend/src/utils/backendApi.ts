@@ -19,16 +19,63 @@ async function getPremarketTokens(
     return (await api.get(`${backendUrl}/premarket/tokens?search=${search}&limit=${limit}&offset=${offset}&sort_order=${sortOrder}&network=${network}`))
 }
 
-async function getTokenInfo(tokenAddr:string){
+async function getTokenInfo(tokenAddr: string) {
     return (await api.get(`${backendUrl}/premarket/token/${tokenAddr}`))
 }
 
+async function getOffers(
+    tokenAddr: string,
+    userAddr: string,
+    collateral: string,
+    filltype: string,
+    is_buy: boolean,
+    offset: number,
+    limit: number
+) {
+    return (await api.get(`${backendUrl}/premarket/offers/${tokenAddr}?userAddr=${userAddr}&collateral=${collateral}&filltype=${filltype}&is_buy=${is_buy}&offset=${offset}&limit=${limit}`))
+}
 
+async function getUserData(accountAddr: string) {
+    return (await api.get(`${backendUrl}/dashboard/userdata/${accountAddr}`))
+}
 
+async function getUserPremarketTokens(
+    accountAddr: string,
+    limit: number,
+    offset: number
+) {
+    return (await api.get(`${backendUrl}/dashboard/premarket_tokens/${accountAddr}?limit=${limit}&offset=${offset}`))
+}
 
+async function getUserOffers(
+    tokenAddr: string,
+    accountAddr: string,
+    offer_status: string,
+    offer_type: string,
+    offset: number,
+    limit: number,
+) {
+    return (await api.get(`${backendUrl}/dashboard/token_offers/${tokenAddr}?account_addr=${accountAddr}&offer_status=${offer_status}&offer_type=${offer_type}&offset=${offset}&limit=${limit}`))
+}
+
+async function getUserOffersData(
+    tokenAddr: string,
+    accountAddr: string,
+    offer_status: string,
+    offer_type: string,
+    offset: number,
+    limit: number,
+) {
+    return (await api.get(`${backendUrl}/dashboard/offers/${tokenAddr}?account_addr=${accountAddr}&offer_status=${offer_status}&offer_type=${offer_type}&offset=${offset}&limit=${limit}`))
+}
 
 const backendApi = {
     getPremarketTokens,
-    getTokenInfo
+    getTokenInfo,
+    getOffers,
+    getUserData,
+    getUserPremarketTokens,
+    getUserOffers,
+    getUserOffersData
 }
 export default backendApi;

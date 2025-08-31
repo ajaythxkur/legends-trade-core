@@ -6,7 +6,7 @@ const premarketRoutes = new Hono();
 premarketRoutes.get('/tokens',  premarketcontrollers.getTokens);
 premarketRoutes.get('/token/:addr',  premarketcontrollers.getTokenInfo);
 premarketRoutes.get('/offers/:addr', premarketcontrollers.getOffers);
-// premarketRoutes.post('/create_offers', premarketcontrollers.createOffers)
+// premarketRoutes.get('/offers', premarketcontrollers.getOffers);
 
 
 export default premarketRoutes;

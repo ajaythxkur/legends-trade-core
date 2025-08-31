@@ -8,21 +8,27 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Token } from "@/types/premarket";
 import CountDownBadge from "@/components/CountDownBadge";
-import dayjs from "dayjs";
+import PremarketSkeletons from "@/components/skeletons/PremarketTokens";
+import Empty from "@/components/Empty";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime'
+dayjs.extend(relativeTime)
 
 interface TokenGridProps {
     tokens: Token[];
-    loading:boolean
+    loading: boolean
 }
 export default function TokensGrid({ tokens, loading }: TokenGridProps) {
+    const { isLoading } = useWallet()
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
     const columns = 4;
     const toggleRow = (row: number) => {
         setExpandedRow(prev => (prev === row ? null : row));
     };
 
-    if(loading) return <div>loading tokens...</div>
-    if(tokens.length === 0) return <div>No tokens found.</div>
+    if (loading || isLoading) return <PremarketSkeletons />
+    if (tokens.length === 0) return <Empty title="Tokens not found." />
 
     return (
         <>
@@ -41,15 +47,17 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="relative">
-                                        <Image src={`${token.image ? token.image : '/media/token-img.png' }`} alt="token-image" width={42} height={42} className="h-10.5 w-10.5  rounded-full" />
+                                        <Link href={`/premarket/${token.token_addr}`} className="w-full">
+                                            <Image src={`${token.image ? token.image : '/media/token-img.png'}`} alt="token-image" width={42} height={42} className="h-10.5 w-10.5  rounded-full" />
+                                        </Link>
                                         {
                                             token.chain_type === 0 &&
-                                            <Image src="/media/aptos.svg" alt="token-image" width={42} height={42} className="h-5 w-5  rounded-full absolute bottom-0 right-0" />
+                                            <Image src="/media/aptos.svg" alt="token-image" width={42} height={42} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
                                         }
                                     </div>
 
                                     <div className="space-y-1">
-                                        <H6 className="font-semibold text-primary-text-color">{token.symbol}</H6>
+                                        <Link href={`/premarket/${token.token_addr}`} className="w-full"><H6 className="font-semibold text-primary-text-color">{token.symbol}</H6></Link>
                                         <PExtraSmall className="text-xs text-tertiary-text-color">{token.name}</PExtraSmall>
                                     </div>
                                 </div>
@@ -98,7 +106,8 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
                                         <div className="flex justify-between items-center">
                                             <PSmall className="text-sm text-tertiary-text-color">Settle time start</PSmall>
                                             <PLarge className="text-sm text-secondary-text-color flex flex-col justify-end items-end">
-                                                <span>{token.temp_starts_at ? dayjs(token.temp_starts_at).format("YYYY-DD-MM") : '---- -- --'}</span>
+                                                {/* <span>{token.temp_starts_at ? token.temp_starts_at : ''}</span> */}
+                                                <span>{token.temp_starts_at ? dayjs(token.temp_starts_at).format("YYYY-MM-DD") : '---- -- --'}</span>
                                                 <span className="text-xs">{token.temp_starts_at ? dayjs(token.temp_starts_at).format("hh:mm A") : '-- : -- --'}</span>
                                             </PLarge>
                                         </div>
@@ -126,7 +135,7 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
                         </div>
                     );
                 })}
-            </div >
+            </div>
         </>
     )
 }

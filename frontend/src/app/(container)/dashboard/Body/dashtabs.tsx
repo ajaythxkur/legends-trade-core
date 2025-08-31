@@ -9,10 +9,16 @@ import Link from "next/link";
 import { Token } from "@/types/premarket";
 import CountDownBadge from "@/components/CountDownBadge";
 import dayjs from "dayjs";
+import PaginationNew from "@/components/PaginationNew";
+import { Dispatch, SetStateAction } from "react";
 interface DashTabsProps {
-    tokens: Token[]
+    tokens: Token[];
+    total: number;
+    offset: number;
+    setOffset: Dispatch<SetStateAction<number>>;
+    loading: boolean
 }
-export default function DashTabs({ tokens }: DashTabsProps) {
+export default function DashTabs({ tokens, total, offset, setOffset, loading }: DashTabsProps) {
     return (
         <Tabs defaultValue="premarket" className="mt-6 lg:mt-8 xl:mt-10 2xl:mt-12">
             <TabsList>
@@ -23,8 +29,7 @@ export default function DashTabs({ tokens }: DashTabsProps) {
 
             {/* Premarket tab content */}
             <TabsContent value="premarket" className="mt-4 lg:mt-8">
-                {/* <div className="grid gap-4 lg:gap-8 grid-cols-1 md:[grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]"> */}
-                <div className="grid gap-4 lg:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                <div className="grid gap-4 lg:gap-8 grid-cols-1 md:[grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]">
                     {
                         tokens.map((token, index) => {
                             return (
@@ -82,6 +87,7 @@ export default function DashTabs({ tokens }: DashTabsProps) {
                         })
                     }
                 </div>
+                <PaginationNew total={total} offset={offset} setOffset={setOffset} loading={loading} />
             </TabsContent>
 
             {/* Points tab content */}

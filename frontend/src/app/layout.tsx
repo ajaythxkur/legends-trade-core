@@ -7,6 +7,7 @@ import { DrawerProvider } from '../contexts/DrawerContext';
 import { WalletProvider } from "@/components/WalletProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { AutoConnectProvider } from "@/components/AutoConnectProvider";
+import NextTopLoader from 'nextjs-toploader';
 export const metadata: Metadata = {
   title: "Legends Trade",
   description: "legends trade",
@@ -24,6 +25,7 @@ export default function RootLayout({
           <AutoConnectProvider>
             <WalletProvider>
               <DrawerProvider>
+                <NextTopLoader color="#9FE878" showSpinner={false} />
                 {children}
               </DrawerProvider>
             </WalletProvider>

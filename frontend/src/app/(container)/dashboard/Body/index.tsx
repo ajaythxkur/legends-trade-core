@@ -5,54 +5,66 @@ import { IoMdArrowUp } from "react-icons/io";
 import { LuCopy } from "react-icons/lu";
 import { Badge } from "@/components/ui/badge";
 import DashTabs from "./dashtabs";
-import { backendUrl } from "@/utils/env";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Token, UserData } from "@/types/premarket";
-import { AccountAddress, truncateAddress, useWallet } from "@aptos-labs/wallet-adapter-react";
+import { truncateAddress, useWallet } from "@aptos-labs/wallet-adapter-react";
+import backendApi from "@/utils/backendApi";
+import SpinnerLoading from "@/components/SpinnerLoading";
+import Empty from "@/components/Empty";
+import WalletBalance from "@/components/WalletBalance";
 
 export default function Body() {
     const { account, isLoading } = useWallet()
     const [tokens, setTokens] = useState<Token[]>([])
-    const [userData, setUserData] = useState<UserData>()
-
-    const getUserOfferTokens = async () => {
-        if (!account) return;
-        try {
-            const response = await fetch(`${backendUrl}/dashboard/user_offer_tokens/${account.address}`);
-            const data = await response.json();
-            setTokens(data);
-            console.log(`Tokens: ${data}`);
-        } catch (error) {
-            console.error(error);
-        }
-    };
+    const [userData, setUserData] = useState<UserData>();
+    const [offset, setOffset] = useState(0)
+    const [total, setTotal] = useState(0)
+    const [loading, setLoading] = useState(false)
 
     const getUserData = async () => {
         if (!account) return;
         try {
-            const response = await fetch(`${backendUrl}/dashboard/userdata/${account.address}`);
-            const data = await response.json();
-            setUserData(data)
+            const response = await backendApi.getUserData(String(account.address))
+            setUserData(response.data)
         } catch (err) {
             console.log(err)
         }
     }
+
+    const getUserPremarketTokens = useCallback(async () => {
+        if (!account) return;
+        setLoading(true)
+        try {
+            const response = await backendApi.getUserPremarketTokens(String(account.address), 10, offset)
+            setTokens(response.data.tokens);
+            setTotal(response.data.total);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false)
+        }
+    }, [account, offset]);
+
     useEffect(() => {
-        getUserOfferTokens()
         getUserData()
     }, [account])
 
-    if (isLoading && !account) return <div>connect wallet</div>;
-    if (!userData && !tokens) return <div>Loading...</div>;
+    useEffect(() => {
+        getUserPremarketTokens()
+    }, [getUserPremarketTokens])
+
+    if (isLoading) return <SpinnerLoading />;
+    if (!account) return <Empty title="Wallet not connected" />;
+    // if (!userData && !tokens) return <SpinnerLoading />;
     return (
         <>
             <div className="md:p-4">
                 <div className="flex items-center gap-4">
                     <Image src="/media/ido-token.png" alt="user-img" height={40} width={40} />
                     <H6 className="text-primary-text-color font-bold flex gap-4 items-center">{truncateAddress(String(account?.address))}<LuCopy /></H6>
+                    <WalletBalance />
                 </div>
 
-                {/* <div className="flex gap-6 justify-between mt-12"> */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 justify-between mt-6 lg:mt-8 xl:mt-10 2xl:mt-12">
                     <div className="bg-card-bg p-4 rounded-lg flex-1">
                         <PMedium className="text-tertiary-text-color">Total Trades</PMedium>
@@ -81,7 +93,7 @@ export default function Body() {
                     </div>
                 </div>
 
-                <DashTabs tokens={tokens} />
+                <DashTabs tokens={tokens} total={total} offset={offset} setOffset={setOffset} loading={loading} />
             </div>
         </>
     )

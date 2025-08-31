@@ -23,7 +23,6 @@ interface CreateOrderProps {
     collateral: number
     price: number
     offer: TokenOffers
-    // is_full_match:boolean
 }
 
 export default function CreateOrder({ type, token, amount, collateral, price, offer }: CreateOrderProps) {
@@ -46,16 +45,15 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
     }
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = Number(e.target.value)
-        if (value <= amount) {
-            setDesiredAmount(value)
-        } else {
+        if (value > amount) {
             setDesiredAmount(amount)
+        } else {
+            setDesiredAmount(value)
         }
-
         // clamp between 0 and maxAmount
         const clamped = Math.min(Math.max(value, 0), maxAmount)
         setSliderValue((clamped / maxAmount) * 100)
-        setCollateralAmount((value * price) / 5) // 5 is apt price static
+        setCollateralAmount((clamped * price) / 5) // 5 is apt price static
     }
 
     const onCreateOrder = async () => {
@@ -127,13 +125,7 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
                     />
 
                     <div className="flex items-center gap-2 flex-shrink-0 ms-2">
-                        <Image
-                            src="/media/token-img.png"
-                            alt="token-image"
-                            width={24}
-                            height={24}
-                            className="rounded-full w-6 h-6 object-contain"
-                        />
+                        <Image src={token.image} alt="token-image" width={24} height={24} className="rounded-full w-6 h-6 object-contain" />
                         <PSmall className="font-medium whitespace-nowrap">{token.symbol}</PSmall>
                     </div>
                 </div>
@@ -206,10 +198,10 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
             <div className="text-center mt-4">
                 {
                     connected ?
-                        <Button className="m-auto w-fit" 
-                        onClick={() => onCreateOrder()}
-                        disabled={!collateralAmount || !desiredAmount}
-                        >Confirm Order</Button>
+                        <Button className="m-auto w-fit"
+                            onClick={() => onCreateOrder()}
+                            disabled={!collateralAmount || !desiredAmount}
+                        >Confirm {type === 'buy' ? 'Buy' : 'Sell'} Order</Button>
                         :
                         <Button className="m-auto w-fit">Connect Wallet <LuWalletMinimal /></Button>
                 }

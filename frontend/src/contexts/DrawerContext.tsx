@@ -1,5 +1,6 @@
 'use client';
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
+import { createContext, useContext, useState, ReactNode, useRef, useEffect } from 'react';
 
 interface DrawerContextType {
   isVisible: boolean;
@@ -7,6 +8,7 @@ interface DrawerContextType {
   openDrawer: (content: ReactNode) => void;
   closeDrawer: () => void;
   toggleDrawer: (content: ReactNode) => void;
+  drawerRef: React.RefObject<HTMLDivElement | null>
 }
 
 const DrawerContext = createContext<DrawerContextType | undefined>(undefined);
@@ -26,6 +28,8 @@ interface DrawerProviderProps {
 export const DrawerProvider = ({ children }: DrawerProviderProps) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [drawerContent, setDrawerContent] = useState<ReactNode>(null);
+  const drawerRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
 
   const openDrawer = (content: ReactNode): void => {
     setDrawerContent(content);
@@ -45,6 +49,24 @@ export const DrawerProvider = ({ children }: DrawerProviderProps) => {
       openDrawer(content);
     }
   };
+  useEffect(() => {
+    if (isVisible) {
+      closeDrawer();
+    }
+  }, [pathname])
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isVisible && drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
+        closeDrawer();
+      }
+    };
+    if (isVisible) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isVisible])
 
   return (
     <DrawerContext.Provider
@@ -54,6 +76,7 @@ export const DrawerProvider = ({ children }: DrawerProviderProps) => {
         openDrawer,
         closeDrawer,
         toggleDrawer,
+        drawerRef,
       }}
     >
       {children}

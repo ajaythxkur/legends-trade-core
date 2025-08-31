@@ -6,23 +6,29 @@ import { PremarketSvg } from "@/components/icons/icons";
 import { Badge } from "@/components/ui/badge";
 import { useDrawer } from "@/contexts/DrawerContext";
 import { Token, TokenOffers } from "@/types/premarket";
+import Empty from "@/components/Empty";
+import { OffersSkeleton } from "@/components/skeletons/PremarketTokens";
 interface BuySellCardProps {
     type: string;
     offers: TokenOffers[];
     tokenInfo: Token;
     fillType: string;
+    loading: boolean
 }
 
-export default function BuySellCard({ type, offers, tokenInfo, fillType }: BuySellCardProps) {
+export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySellCardProps) {
     const { openDrawer } = useDrawer();
-    const filteredOffers = offers.filter((offer) => {
-        if (fillType === 'all') return true
-        if (fillType == 'partial') return !offer.is_full_match
-        if (fillType == 'full') return offer.is_full_match
-    })
+    // const filteredOffers = offers.filter((offer) => {
+    //     if (fillType === 'all') return true
+    //     if (fillType == 'partial') return !offer.is_full_match
+    //     if (fillType == 'full') return offer.is_full_match
+    // })
+
+    if (loading) return <OffersSkeleton />
+    if (offers.length === 0) return <Empty title="No offers found." />
     return (
         <div className="grid gap-4 md:gap-6 grid-cols-1 md:[grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]">
-            {filteredOffers.map((offer, i) => {
+            {offers.map((offer, i) => {
                 const aptPrice = 5;
                 const amount = Number(offer.amount) / 10000;
                 const price = (Number(offer.price) / Math.pow(10, 8)) * aptPrice
@@ -35,10 +41,9 @@ export default function BuySellCard({ type, offers, tokenInfo, fillType }: BuySe
                             <div className="text-start">
                                 <PSmall>Offer</PSmall>
                                 <div className="flex gap-1 items-center mt-2">
-                                    <Image src="/media/token-image.svg" alt="token-image" width={20} height={20} className="rounded-full" />
+                                    <Image src={tokenInfo.image ? tokenInfo.image : "/media/token-image.svg"} alt="token-image" width={20} height={20} className="rounded-full" />
                                     <PLarge className='text-primary-text-color'>{amount}</PLarge>
                                 </div>
-                                {/* <PExtraSmall className="text-tertiary-text-color mt-2">$ {}</PExtraSmall> */}
                             </div>
 
                             <div className="text-center">

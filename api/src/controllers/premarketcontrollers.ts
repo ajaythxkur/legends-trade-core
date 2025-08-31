@@ -16,15 +16,6 @@ export const getTokens = async (c: Context) => {
         const sortOrder = c.req.query("sort_order") === "desc" ? "desc" : "asc";
         const network = c.req.query("network");
 
-        // const tokens = await prisma.premarketToken.findMany({
-        //     include: {
-        //         offers: {
-        //             orderBy: {
-        //                 ts: 'desc'
-        //             }
-        //         }
-        //     }
-        // });
         const tokens = await prisma.premarketToken.findMany({
             where: {
                 AND: [
@@ -42,8 +33,8 @@ export const getTokens = async (c: Context) => {
                         : {},
                 ],
             },
-            skip: offset,
             take: limit,
+            skip: offset * limit,
             orderBy: {
                 createdAt: sortOrder,
             },
@@ -96,28 +87,25 @@ export const getTokens = async (c: Context) => {
             };
         });
 
-        return c.json(serialize(tokensWithMetrics), 200);
+        // return c.json(serialize(tokensWithMetrics), 200);
+        const totaltokens = await prisma.premarketToken.findMany()
+        const totalpages = Math.ceil(totaltokens.length / limit);
+        console.log(`pages: ${totalpages}`)
+        const result = {
+            data: serialize(tokensWithMetrics),
+            count: totalpages
+        };
+
+        return c.json(result, 200);
     } catch (error) {
         console.error("Error fetching tokens:", error);
         return c.json({ error: "Failed to fetch tokens" }, 500);
     }
 };
 
-// export const getTokenInfo = async (c: Context) => {
-//     try {
-//         const { addr } = c.req.param();
-//         const token = await prisma.premarketToken.findUnique({
-//             where: {
-//                 token_addr: addr
-//             }
-//         });
-//         return c.json(serialize(token), 200);
-//     } catch (error) {
-//         console.error("Error fetching token:", error);
-//         return c.json({ error: "Failed to fetch token INFO" }, 500);
-//     }
-// };
 
+
+// get token information
 export const getTokenInfo = async (c: Context) => {
     try {
         const { addr } = c.req.param();
@@ -181,19 +169,109 @@ export const getTokenInfo = async (c: Context) => {
     }
 };
 
+// get Offers
 export const getOffers = async (c: Context) => {
     try {
-        const { addr } = c.req.param()
+        const { addr } = c.req.param();
+        let userAddr = c.req.query('userAddr') ?? ''
+        const filltype = c.req.query("filltype");
+        const collateral = c.req.query("collateral");
+        const is_buy = c.req.query("is_buy"); // "true" or "false"
+        const limit = Number(c.req.query("limit") ?? 10);
+        const offset = Number(c.req.query('offset') ?? 0)
+        const currenttoken = await prisma.premarketToken.findUnique({
+            where: {
+                token_addr: addr,
+                status: { in: [1, 3] }
+            }
+        })
+        if (currenttoken) {
+            userAddr = 'all'
+        }
+
         const offers = await prisma.premarketOffer.findMany({
             where: {
-                token_addr: addr
-            }
+                token_addr: addr,
+                is_active: true,
+                ...(is_buy !== undefined ? { is_buy: is_buy === "false" } : {}),
+                AND: [
+                    filltype && filltype !== "all"
+                        ? { is_full_match: filltype === "full" }
+                        : {},
+
+                    collateral && collateral != 'all' ?
+                        { collateral_asset: collateral }
+                        :
+                        {},
+                    userAddr && userAddr !== ''
+                        ? { created_by: { not: userAddr } }
+                        : {}
+                ],
+            },
+            take: limit,
+            skip: offset * limit,
         });
-        // return c.json(offers);
         return c.json(serialize(offers), 200);
+    } catch (error) {
+        console.error(error);
+        return c.json({ error: "Failed to fetch offers" }, 500);
     }
-    catch (error) {
-        console.log(error)
-        return c.json(`${error}`)
-    }
-}
+};
+
+// export const getOffers = async (c: Context) => {
+//     try {
+//         const { addr } = c.req.param();
+//         const userAddr = c.req.query('userAddr');
+//         const filltype = c.req.query("filltype");
+//         const collateral = c.req.query("collateral");
+//         const is_buy = c.req.query("is_buy");
+//         const limit = Math.min(Number(c.req.query("limit")) || 10, 100); // Cap at 100
+//         const offset = Number(c.req.query('offset')) || 0;
+
+//         const currentToken = await prisma.premarketToken.findUnique({
+//             where: {
+//                 token_addr: addr,
+//                 status: { in: [1, 3] }
+//             }
+//         });
+
+//         if (!currentToken) {
+//             return c.json({ error: "Token not found or inactive" }, 404);
+//         }
+
+//         const whereConditions: any = {
+//             token_addr: addr,
+//             is_active: true
+//         };
+
+//         // filters
+//         if (is_buy === "true" || is_buy === "false") {
+//             whereConditions.is_buy = is_buy === "false";
+//         }
+
+//         if (filltype && filltype !== "all") {
+//             whereConditions.is_full_match = filltype === "full";
+//         }
+
+//         if (collateral && collateral !== "all") {
+//             whereConditions.collateral_asset = collateral;
+//         }
+
+//         // Exclude user's own offers if userAddr is provided
+//         if (userAddr && userAddr.trim() !== "") {
+//             whereConditions.created_by = { not: userAddr };
+//         }
+
+//         const offers = await prisma.premarketOffer.findMany({
+//             where: whereConditions,
+//             take: limit,
+//             skip: offset * limit,
+//             orderBy: { ts: 'desc' } // Add consistent ordering
+//         });
+
+//         return c.json(serialize(offers), 200);
+//     } catch (error) {
+//         console.error('Error fetching offers:', error);
+//         return c.json({ error: "Failed to fetch offers" }, 500);
+//     }
+// };

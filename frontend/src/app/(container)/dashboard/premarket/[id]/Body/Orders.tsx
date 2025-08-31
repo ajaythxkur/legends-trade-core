@@ -91,7 +91,7 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
             <Table className="mt-4">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="text-start">User</TableHead>
+                        <TableHead className="text-start">By</TableHead>
                         <TableHead className="text-center">Time</TableHead>
                         <TableHead className="text-center">Collateral</TableHead>
                         <TableHead className="text-center">Status</TableHead>
@@ -124,7 +124,13 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
 
                             return (
                                 <TableRow key={index} >
-                                    <TableCell className="text-sm">{truncateAddress(order.created_by.toString())}</TableCell>
+                                    <TableCell className="text-sm">
+                                        {order.created_by === String(account.address) ?
+                                            'me'
+                                            :
+                                            truncateAddress(order.created_by.toString())
+                                        }
+                                    </TableCell>
                                     <TableCell className="text-center ">{dayjs.unix(Number(order.ts)).fromNow()}</TableCell>
                                     <TableCell>
                                         <span className="flex gap-1 justify-center items-center">
@@ -133,42 +139,6 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                         </span>
                                     </TableCell>
                                     <TableCell className="text-center ">
-                                        {/* {orderStatus === "settled" ? (
-                                            <Badge variant="positive">Settled</Badge>
-                                        ) : orderStatus === "claimed" ? (
-                                            <Badge variant="positive">Claimed</Badge>
-                                        ) : (
-                                            <Badge variant="warning">Pending</Badge>
-                                        )} */}
-                                        {/* {
-                                            isBuyer ?(
-                                                order.is_claimed ?(
-                                                    <Badge variant="positive">Claimed</Badge>
-                                                ):
-                                                <Badge variant="warning">Pending</Badge>
-                                            ):(
-                                                order.is_settled ?(
-                                                    <Badge variant="positive">Settled</Badge>
-                                                ):
-                                                <Badge variant="warning">Pending</Badge>
-                                            )
-                                        } */}
-                                        {/* {
-                                            isBuyer && (
-                                                order.is_claimed ? (
-                                                    <Badge variant="positive">Claimed</Badge>
-                                                ) :
-                                                    <Badge variant="warning">Pending</Badge>
-                                            )
-                                        }
-                                        {
-                                            isSeller && (
-                                                order.is_claimed || order.is_settled ? (
-                                                    <Badge variant="positive">Claimed</Badge>
-                                                ) :
-                                                    <Badge variant="warning">Pending</Badge>
-                                            )
-                                        } */}
                                         <Badge
                                             variant={
                                                 isBuyer
@@ -198,7 +168,7 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                         </Badge>
                                     </TableCell>
                                     {
-                                        tokenStatus !== 1 ?
+                                        tokenStatus !== 1 && order.created_by === String(account?.address) ?
                                             <TableCell className="text-center">
                                                 <Button
                                                     className="px-4 py-1.75"
