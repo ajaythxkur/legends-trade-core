@@ -9,9 +9,9 @@ import dashRoutes from './routes/dashboardRoutes.js'
 const app = new Hono()
 app.use("/*", cors({ origin: "http://localhost:3000" }))
 
-// app.get('/', (c) => {
-//   return c.text('Hello Hono!')
-// })
+app.get('/', (c) => {
+  return c.text('Hello Hono!')
+})
 
 app.route("/premarket", premarketRoutes);
 app.route("/dashboard", dashRoutes);

@@ -1,12 +1,12 @@
 use ahash::AHashMap;
 use anyhow::Result;
 use aptos_indexer_processor_sdk::utils::errors::ProcessorError;
-use diesel::{insert_into, ExpressionMethods, QueryResult, update, QueryDsl};
+use diesel::{insert_into, update, ExpressionMethods, QueryDsl, QueryResult};
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
 
 use crate::{
     db_models::premarket_orders::{PremarketOrder, PremarketOrderCancelled, PremarketOrderClaimed, PremarketOrderSettled},
-    schema::premarket_orders,
+    schema::{premarket_offers, premarket_orders},
     utils::{
         database_connection::get_db_connection,
         database_utils::{get_config_table_chunk_size, ArcDbPool},
@@ -24,6 +24,16 @@ async fn execute_order_created_events_sql(
                 .on_conflict(premarket_orders::order_addr)
                 .do_nothing();
             create_orders_query.execute(conn).await?;
+             for item in &items_to_insert {
+                let update_offer_query = update(
+                    premarket_offers::table.filter(
+                        premarket_offers::offer_addr.eq(item.offer_addr.clone())
+                    )
+                )
+                .set(premarket_offers::filled_amount.eq(premarket_offers::filled_amount + item.amount));
+
+                update_offer_query.execute(conn).await?;
+            };
             Ok(())
         })
     })
