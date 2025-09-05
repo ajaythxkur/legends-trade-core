@@ -5,9 +5,6 @@ import { setupAutomaticEthereumWalletDerivation } from "@aptos-labs/derived-wall
 import { setupAutomaticSolanaWalletDerivation } from "@aptos-labs/derived-wallet-solana";
 import { PropsWithChildren } from "react";
 import { Network } from "@aptos-labs/ts-sdk";
-
-// import { useClaimSecretKey } from "@/hooks/useClaimSecretKey";
-import { useAutoConnect } from "./AutoConnectProvider";
 import {toast} from "sonner"
 
 setupAutomaticEthereumWalletDerivation({ defaultNetwork: Network.TESTNET });
@@ -19,11 +16,6 @@ if (typeof window !== "undefined") {
 }
 
 export const WalletProvider = ({ children }: PropsWithChildren) => {
-  const { autoConnect } = useAutoConnect();
-
-  // Enables claim flow when the `claim` query param is detected
-//   const claimSecretKey = useClaimSecretKey();
-
   return (
     <AptosWalletAdapterProvider
       autoConnect={true}
@@ -34,7 +26,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
           devnet: process.env.NEXT_PUBLIC_APTOS_API_KEY_DEVNET,
         },
         aptosConnect: {
-        //   claimSecretKey,
           dappId: "57fa42a9-29c6-4f1e-939c-4eefa36d9ff5",
           dappImageURI,
         },

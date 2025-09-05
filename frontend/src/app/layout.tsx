@@ -8,9 +8,14 @@ import { WalletProvider } from "@/components/WalletProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { AutoConnectProvider } from "@/components/AutoConnectProvider";
 import NextTopLoader from 'nextjs-toploader';
+import { Network, NetworkToNetworkName } from "@aptos-labs/ts-sdk";
+import { CrossChainProvider } from "@/contexts/CrossChain";
+import { AppProvider } from "@/contexts/AppProvider";
+// constand network configuration
+const dappNetwork: Network.MAINNET | Network.TESTNET = Network.TESTNET;
 export const metadata: Metadata = {
   title: "Legends Trade",
-  description: "legends trade",
+  description: "Cross chain OTC platform on Aptos blockchain",
 };
 
 export default function RootLayout({
@@ -24,10 +29,14 @@ export default function RootLayout({
         <ThemeProvider>
           <AutoConnectProvider>
             <WalletProvider>
-              <DrawerProvider>
-                <NextTopLoader color="#9FE878" showSpinner={false} />
-                {children}
-              </DrawerProvider>
+              <CrossChainProvider dappNetwork={dappNetwork}>
+                <AppProvider>
+                  <DrawerProvider>
+                    <NextTopLoader color="#9FE878" showSpinner={false} />
+                    {children}
+                  </DrawerProvider>
+                </AppProvider>
+              </CrossChainProvider>
             </WalletProvider>
           </AutoConnectProvider>
         </ThemeProvider>

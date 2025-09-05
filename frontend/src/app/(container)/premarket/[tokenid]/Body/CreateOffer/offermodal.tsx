@@ -20,6 +20,7 @@ import { collateral_assets, collateralProps } from "@/utils/constants"
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { IoCheckmark } from "react-icons/io5"
 
+import { useCrossChain } from "@/contexts/CrossChain"
 interface CreateOfferModalProps {
     token: Token
     tokenAddr: string;
@@ -27,6 +28,8 @@ interface CreateOfferModalProps {
     setOpen: Dispatch<SetStateAction<boolean>>
 }
 export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: CreateOfferModalProps) {
+    const { crossChainCore } = useCrossChain();
+    const provider = crossChainCore.getProvider("Wormhole");
     const { account, signAndSubmitTransaction } = useWallet();
     const [isBuy, setIsBuy] = useState(true);
     const [tokenprice, setTokenPrice] = useState<string>('');
@@ -53,25 +56,6 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
         }
     };
 
-    // const handleTokenPrice = (e: ChangeEvent<HTMLInputElement>) => {
-    //     const token_price = Number(e.target.value);
-    //     setTokenPrice(token_price.toString());
-
-    //     const actualPrice = token_price / Aptprice;
-    //     setActuralPrice(actualPrice);
-
-    //     const collateral = actualPrice * Number(desiredAmount || 0);
-    //     setCollateralAmount(collateral);
-    // };
-
-    // const handleDesiredAmount = (e: ChangeEvent<HTMLInputElement>) => {
-    //     const d_amount = Number(e.target.value);
-    //     setDesiredAmount(d_amount.toString());
-
-    //     const collateral = d_amount * acturalPrice;
-    //     setCollateralAmount(collateral);
-    // };
-
 
     const handleTokenPrice = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -90,8 +74,6 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
         const collateral = priceInApt * Number(desiredAmount || 0);
         setCollateralAmount(collateral);
     };
-
-
 
     const handleDesiredAmount = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
