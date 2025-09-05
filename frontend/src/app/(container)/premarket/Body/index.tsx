@@ -14,7 +14,7 @@ export default function Body() {
     const [total, setTotal] = useState(0)
     const [sortOrder, setSortOrder] = useState('desc');
     const [search, setSearch] = useState('');
-    const [network, setNetwork] = useState(0);
+    const [network, setNetwork] = useState(4);
     const [isLoading, setisLoading] = useState(false);
     const [debounce, setDebounce] = useState('')
 

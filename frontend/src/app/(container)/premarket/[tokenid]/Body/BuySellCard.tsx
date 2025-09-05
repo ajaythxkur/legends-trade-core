@@ -8,6 +8,7 @@ import { useDrawer } from "@/contexts/DrawerContext";
 import { Token, TokenOffers } from "@/types/premarket";
 import Empty from "@/components/Empty";
 import { OffersSkeleton } from "@/components/skeletons/PremarketTokens";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 interface BuySellCardProps {
     type: string;
     offers: TokenOffers[];
@@ -17,6 +18,7 @@ interface BuySellCardProps {
 }
 
 export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySellCardProps) {
+    const { account } = useWallet();
     const { openDrawer } = useDrawer();
     // const filteredOffers = offers.filter((offer) => {
     //     if (fillType === 'all') return true
@@ -35,9 +37,9 @@ export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySel
                 const collateralInUsd = amount * price
                 const collateral = collateralInUsd / aptPrice
                 return (
-                    // <div key={i} className="bg-card-bg rounded-lg px-4 py-5 border-2 border-card-border-sell flex flex-col" >
                     <div key={i} className={`bg-card-bg rounded-lg px-4 py-5 border-2 ${type === 'buy' ? 'border-card-border-buy' : 'border-card-border-sell'}  flex flex-col`}>
-                        <div className="flex justify-between items-start mb-4 text-secondary-text-color">
+                        {/* <div className="flex justify-between items-start mb-4 text-secondary-text-color"> */}
+                        <div className="grid grid-cols-3 mb-4 text-secondary-text-color">
                             <div className="text-start">
                                 <PSmall>Offer</PSmall>
                                 <div className="flex gap-1 items-center mt-2">
@@ -56,7 +58,7 @@ export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySel
 
                             <div className="text-end">
                                 <PSmall>For</PSmall>
-                                <div className="flex gap-2 items-center mt-2">
+                                <div className="flex gap-2 items-center mt-2 justify-end">
                                     {
                                         tokenInfo.chain_type === 0 ?
                                             <Image src="/media/aptos.svg" alt="token-image" width={20} height={20} className="rounded-full" />
@@ -68,8 +70,15 @@ export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySel
                                 <PExtraSmall className="text-tertiary-text-color mt-2">$ {collateralInUsd}</PExtraSmall>
                             </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <Badge variant='outline' className='text-xs py-2 px-3'>{offer.is_full_match ? 'Full' : 'Partial'}</Badge>
+                        {/* <div className="flex items-center justify-between"> */}
+                        <div className="grid grid-cols-3 items-center">
+                            <Badge variant='outline' className='text-xs p-3 py-2.75 w-fit'>{offer.is_full_match ? 'Full' : 'Partial'}</Badge>
+                            {
+                                offer.created_by === account?.address.toString() ?
+                                    <PExtraSmall className="text-tertiary-text-color text-center">My Offer</PExtraSmall>
+                                    : <span>{''}</span>
+
+                            }
                             <Button
                                 size="md"
                                 onClick={() => openDrawer(
@@ -82,7 +91,8 @@ export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySel
                                         offer={offer}
                                     />
                                 )}
-                                disabled={tokenInfo.status !== 0}
+                                disabled={tokenInfo.status !== 0 || offer.created_by === account?.address.toString()}
+                                className="w-fit ms-auto"
                             >
                                 {
                                     type === 'buy' ? 'Buy' : 'Sell'

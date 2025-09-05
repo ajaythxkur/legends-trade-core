@@ -28,7 +28,7 @@ export const getTokens = async (c: Context) => {
                             ],
                         }
                         : {},
-                    network && network !== "all"
+                    network && network !== '4'
                         ? { chain_type: Number(network) }
                         : {},
                 ],
@@ -179,15 +179,15 @@ export const getOffers = async (c: Context) => {
         const is_buy = c.req.query("is_buy"); // "true" or "false"
         const limit = Number(c.req.query("limit") ?? 10);
         const offset = Number(c.req.query('offset') ?? 0)
-        const currenttoken = await prisma.premarketToken.findUnique({
-            where: {
-                token_addr: addr,
-                status: { in: [1, 3] }
-            }
-        })
-        if (currenttoken) {
-            userAddr = 'all'
-        }
+        // const currenttoken = await prisma.premarketToken.findUnique({
+        //     where: {
+        //         token_addr: addr,
+        //         status: { in: [1, 3] }
+        //     }
+        // })
+        // if (currenttoken) {
+        //     userAddr = 'all'
+        // }
 
         const offers = await prisma.premarketOffer.findMany({
             where: {
@@ -203,9 +203,9 @@ export const getOffers = async (c: Context) => {
                         { collateral_asset: collateral }
                         :
                         {},
-                    userAddr && userAddr !== ''
-                        ? { created_by: { not: userAddr } }
-                        : {}
+                    // userAddr && userAddr !== ''
+                    //     ? { created_by: { not: userAddr } }
+                    //     : {}
                 ],
             },
             take: limit,
@@ -217,6 +217,7 @@ export const getOffers = async (c: Context) => {
         return c.json({ error: "Failed to fetch offers" }, 500);
     }
 };
+
 
 // export const getOffers = async (c: Context) => {
 //     try {

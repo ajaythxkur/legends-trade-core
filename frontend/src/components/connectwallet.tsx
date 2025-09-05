@@ -43,7 +43,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-// import { useToast } from "./ui/use-toast";
 import { toast } from 'sonner'
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { TabsContent } from "./ui/tabs";
@@ -51,7 +50,6 @@ import Link from "next/link";
 
 export function WalletSelector(walletSortingOptions: WalletSortingOptions) {
     const { account, connected, disconnect, wallet, isLoading } = useWallet();
-    //   const { toast } = useToast();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const closeDialog = useCallback(() => setIsDialogOpen(false), []);
@@ -75,7 +73,7 @@ export function WalletSelector(walletSortingOptions: WalletSortingOptions) {
                         "Unknown"}
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="z-90">
                 <DropdownMenuItem onSelect={copyAddress} className="gap-2 flex items-center cursor-pointer">
                     <Copy className="h-4 w-4" /> Copy address
                 </DropdownMenuItem>

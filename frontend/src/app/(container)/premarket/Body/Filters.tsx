@@ -17,6 +17,10 @@ interface FilterProps {
 export default function Filters({ setSortOrder, setNetwork, setDebounce, debounce, isLoading, sortOrder, network }: FilterProps) {
     const networks = [
         {
+            chain: 4,
+            name: 'All'
+        },
+        {
             chain: 0,
             name: 'Aptos'
         },

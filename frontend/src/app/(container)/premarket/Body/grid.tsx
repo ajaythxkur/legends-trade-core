@@ -54,6 +54,14 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
                                             token.chain_type === 0 &&
                                             <Image src="/media/aptos.svg" alt="token-image" width={42} height={42} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
                                         }
+                                        {
+                                            token.chain_type === 1 &&
+                                            <Image src="/media/solana.jpg" alt="token-image" width={42} height={42} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
+                                        }
+                                        {
+                                            token.chain_type === 2 &&
+                                            <Image src="/media/ethereum.jpg" alt="token-image" width={42} height={42} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
+                                        }
                                     </div>
 
                                     <div className="space-y-1">

@@ -15,6 +15,7 @@ import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-reac
 import { moduleAddress } from "@/utils/env"
 import aptosClient from "@/lib/aptos"
 import { toast } from "sonner"
+import { WalletSelector } from "@/components/connectwallet"
 
 interface CreateOrderProps {
     type: string;
@@ -36,6 +37,17 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
     const [sliderValue, setSliderValue] = useState(0) // percentage (0 → 100)
     const maxAmount = amount
     const currentCount = Math.round((sliderValue / 100) * maxAmount)
+
+    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        const { key } = e;
+        if (key === "Backspace" || key === "Delete" || key === "ArrowLeft" || key === "ArrowRight" || key === "Tab") { return; }
+        if (!/[0-9.]/.test(key)) {
+            e.preventDefault();
+        }
+        if (key === "." && e.currentTarget.value.includes(".")) {
+            e.preventDefault();
+        }
+    };
 
     const handleSliderChange = (val: number[]) => {
         const percent = val[0]
@@ -118,6 +130,7 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
                         name="desired-amt"
                         value={desiredAmount}
                         onChange={handleInputChange}
+                        onKeyDown={handleKeyPress}
                         inputMode="decimal"
                         placeholder="0.000"
                         className="text-xl font-bold bg-transparent outline-none w-full"
@@ -203,7 +216,7 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
                             disabled={!collateralAmount || !desiredAmount}
                         >Confirm {type === 'buy' ? 'Buy' : 'Sell'} Order</Button>
                         :
-                        <Button className="m-auto w-fit">Connect Wallet <LuWalletMinimal /></Button>
+                        <WalletSelector />
                 }
             </div>
 

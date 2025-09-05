@@ -1,23 +1,24 @@
 "use client"
 import { ChangeEvent, Dispatch, SetStateAction, useCallback, useEffect, useState } from "react"
-import { Info } from "lucide-react"
+import { AlertTriangle, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { H5, H6, PExtraSmall, PMedium, PSmall } from "@/components/ui/typography"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
 import { IoIosArrowDown } from "react-icons/io"
 import Image from "next/image"
 import { PremarketSvg } from "@/components/icons/icons"
 import { Badge } from "@/components/ui/badge"
 import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
 import { toast } from "sonner"
-import aptosClient from "@/lib/aptos"
+import aptosClient, { getTxnOnExplorer } from "@/lib/aptos"
 import { Token } from "@/types/premarket"
 import { moduleAddress } from "@/utils/env"
 import { WalletSelector } from "@/components/connectwallet"
 import WalletBalance from "@/components/WalletBalance"
 import { collateral_assets, collateralProps } from "@/utils/constants"
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import { IoCheckmark } from "react-icons/io5"
 
 interface CreateOfferModalProps {
     token: Token
@@ -37,6 +38,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
     const [orderType, setOrderType] = useState<string>("full");
     const isFullMatch = orderType === "full"; // boolean
     const [currentStep, setCurrentStep] = useState(1);
+    const [isError, setIsError] = useState(false)
 
     const priceInUsd = selectedCollateral.usdPrice; // in USD
 
@@ -109,11 +111,10 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
     const createOffer = async () => {
         if (!account) return [];
 
-        const price = (Number(tokenprice) / priceInUsd) * Math.pow(10, (selectedCollateral.decimals || 0) );
+        const price = (Number(tokenprice) / priceInUsd) * Math.pow(10, (selectedCollateral.decimals || 0));
         const amount = Number(desiredAmount) * 10000
 
         try {
-
             const transaction: InputTransactionData = {
                 data: {
                     function: `${moduleAddress}::premarket::create_offer_entry`,
@@ -128,20 +129,31 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
                     ]
                 }
             }
-            // sign and submit transaction to chain
             const response = await signAndSubmitTransaction(transaction);
-            // wait for transaction
             await aptosClient.waitForTransaction({ transactionHash: response.hash });
-            toast.success('offer created successfully')
-            setOpen(!open)
+            toast.success(`Transaction completed`, {
+                action: <a target="_blank" href={getTxnOnExplorer(response.hash)} style={{ color: "green", textDecoration: "underline" }}>View Txn</a>,
+                icon: <IoCheckmark />
+            });
+            setOpen(false)
         } catch (error: any) {
             console.log(error);
-            toast.error(`${error} failed to create offer`)
+            toast.error(`Failed to create offer: ${error} `)
         }
     };
 
+    const handleNextClick = () => {
+        const orderValue = Number(tokenprice) * Number(desiredAmount);
+        if (orderValue < 10) {
+            setIsError(true);
+            return;
+        }
+        setIsError(false);
+        setCurrentStep(2);
+    }
+
     return (
-        <div className="bg-bottom-layer-2 rounded-2xl w-full py-4 px-5 mt-0">
+        <div className="bg-bottom-layer-2 rounded-2xl w-full py-4 px-5 mt-0 ">
             <div className="flex items-center justify-between">
                 <Badge variant="outline">Step {currentStep}/2</Badge>
             </div>
@@ -251,6 +263,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
+                    <PExtraSmall>~ ${Number(tokenprice) * Number(desiredAmount)}</PExtraSmall>
                 </div>
 
                 {/* Select Type */}
@@ -269,6 +282,17 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
                     </div>
                 </RadioGroup>
             </div>
+
+            {/* Warning Message */}
+            {
+                isError &&
+                <div className="flex items-center gap-2 text-warning-text bg-surface-warning w-fit mt-5 m-auto p-1 rounded">
+                    <AlertTriangle className="w-4 h-4" />
+                    <PSmall>The offer value must exceed $10.</PSmall>
+                </div>
+            }
+
+
 
             {/* ------------------------------------- */}
             {/* Step 2 */}
@@ -308,7 +332,8 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
             <div className="flex justify-between">
                 {/* Step 1 Buttons */}
                 {currentStep === 1 && (
-                    <Button onClick={() => setCurrentStep(2)} className="w-full mt-4" disabled={!collateralAmount || !tokenprice || !desiredAmount}>Next</Button>
+                    // <Button onClick={() => setCurrentStep(2)} className="w-full mt-4" disabled={!collateralAmount || !tokenprice || !desiredAmount}>Next</Button>
+                    <Button onClick={() => handleNextClick()} className="w-full mt-4" disabled={!collateralAmount || !tokenprice || !desiredAmount}>Next</Button>
                 )}
 
                 {/* Step 2 Buttons */}

@@ -26,7 +26,7 @@ export default function ModalDemo({ token, tokenAddr }: ModalDemoProps) {
                 <FiPlus className="h-3 w-3" />
             </Button>
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="p-0 space-y-0">
+                <DialogContent className="p-0 space-y-0 max-h-[90vh] overflow-y-auto scrollbar-hide" showCloseButton={false}>
                     <DialogHeader>
                         <DialogTitle>{''}</DialogTitle>
                     </DialogHeader>

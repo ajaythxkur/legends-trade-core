@@ -32,7 +32,7 @@ export default function WalletBalance() {
     }, [account?.address]);
 
     return (
-        <p>{balance !== null ? balance : "Loading..."}</p>
+        <span>{balance !== null ? balance : "Loading..."}</span>
     );
 }
 

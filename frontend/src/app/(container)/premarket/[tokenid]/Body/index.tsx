@@ -72,11 +72,13 @@ export default function Body({ tokenAddr }: BodyProps) {
                                 <TabsList>
                                     <TabsTrigger value="buy" onClick={() => setIsBuy(true)}>Buy</TabsTrigger>
                                     <TabsTrigger value="sell" onClick={() => setIsBuy(false)}>Sell</TabsTrigger>
-                                </TabsList>
+                                </TabsList> 
                                 <div className="hidden badges lg:flex gap-4 items-center mt-6">
                                     {/* <Badge variant="outline" className="flex items-center gap-2" onClick={() => removeFilter('floorPrice')}>Floor Price{filters.floorPrice}<IoCloseOutline className="w-5 h-5" /></Badge> */}
                                     {collateral !== 'all' &&
-                                        <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setCollateral('all')}>{collateral} <IoCloseOutline className="w-5 h-5" /></Badge>
+                                        <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setCollateral('all')}>
+                                            {collateral}
+                                            <IoCloseOutline className="w-5 h-5" /></Badge>
                                     }
                                     {fillType !== 'all' &&
                                         <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setFillType('all')}>{fillType}<IoCloseOutline className="w-5 h-5" /></Badge>
