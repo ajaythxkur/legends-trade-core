@@ -61,22 +61,22 @@ export interface collateralProps{
     decimals:number;
 }
 export const collateral_assets:collateralProps[] = [
-    {
-        name: 'Aptos',
-        symbol: 'APT',
-        icon: '/media/aptos.png',
-        address: '0x000000000000000000000000000000000000000000000000000000000000000a',
-        usdPrice:5,
-        decimals: 8,
-    },
-    {
-        name: 'Teather USDT',
-        symbol: 'USDT',
-        icon: '/media/usdt.jpg',
-        address: '0x000000000000000000000000000000000000000000000000000000000000000b',
-        usdPrice:1,
-        decimals: 6
-    },
+    // {
+    //     name: 'Aptos',
+    //     symbol: 'APT',
+    //     icon: '/media/aptos.png',
+    //     address: '0x000000000000000000000000000000000000000000000000000000000000000a',
+    //     usdPrice:5,
+    //     decimals: 8,
+    // },
+    // {
+    //     name: 'Teather USDT',
+    //     symbol: 'USDT',
+    //     icon: '/media/usdt.jpg',
+    //     address: '0x000000000000000000000000000000000000000000000000000000000000000b',
+    //     usdPrice:1,
+    //     decimals: 6
+    // },
     {
         name: 'Teather USDC',
         symbol: 'USDC',

@@ -4,11 +4,11 @@ import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { setupAutomaticEthereumWalletDerivation } from "@aptos-labs/derived-wallet-ethereum";
 import { setupAutomaticSolanaWalletDerivation } from "@aptos-labs/derived-wallet-solana";
 import { PropsWithChildren } from "react";
-import { Network } from "@aptos-labs/ts-sdk";
-import {toast} from "sonner"
+import { APTOS_API_KEY_DEVNET, APTOS_API_KEY_TESNET, NETWORK } from "@/utils/env";
+import { toast } from "sonner"
 
-setupAutomaticEthereumWalletDerivation({ defaultNetwork: Network.TESTNET });
-setupAutomaticSolanaWalletDerivation({ defaultNetwork: Network.TESTNET });
+setupAutomaticEthereumWalletDerivation({ defaultNetwork: NETWORK });
+setupAutomaticSolanaWalletDerivation({ defaultNetwork: NETWORK });
 
 let dappImageURI: string | undefined;
 if (typeof window !== "undefined") {
@@ -20,10 +20,10 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     <AptosWalletAdapterProvider
       autoConnect={true}
       dappConfig={{
-        network: Network.TESTNET,
+        network: NETWORK,
         aptosApiKeys: {
-          testnet: process.env.NEXT_PUBLIC_APTOS_API_KEY_TESNET,
-          devnet: process.env.NEXT_PUBLIC_APTOS_API_KEY_DEVNET,
+          testnet: APTOS_API_KEY_TESNET,
+          devnet: APTOS_API_KEY_DEVNET,
         },
         aptosConnect: {
           dappId: "57fa42a9-29c6-4f1e-939c-4eefa36d9ff5",

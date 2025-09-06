@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { H5, H6, PExtraSmall, PMedium, PSmall } from "@/components/ui/typography"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
-import { IoIosArrowDown } from "react-icons/io"
 import Image from "next/image"
 import { PremarketSvg } from "@/components/icons/icons"
 import { Badge } from "@/components/ui/badge"
@@ -15,28 +14,30 @@ import aptosClient, { getTxnOnExplorer } from "@/lib/aptos"
 import { Token } from "@/types/premarket"
 import { moduleAddress } from "@/utils/env"
 import { WalletSelector } from "@/components/connectwallet"
-import WalletBalance from "@/components/WalletBalance"
 import { collateral_assets, collateralProps } from "@/utils/constants"
-import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { IoCheckmark } from "react-icons/io5"
-
-import { useCrossChain } from "@/contexts/CrossChain"
+import { testnetTokens, WormholeQuoteResponse } from "@/cross-chain-core"
+import { useUSDCBalance } from "@/contexts/USDCBalanceContext"
+import { useApp } from "@/contexts/AppProvider"
+import { InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk"
 interface CreateOfferModalProps {
     token: Token
     tokenAddr: string;
     open: boolean;
-    setOpen: Dispatch<SetStateAction<boolean>>
+    setOpen: Dispatch<SetStateAction<boolean>>;
+    balance: string;
 }
-export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: CreateOfferModalProps) {
-    const { crossChainCore } = useCrossChain();
-    const provider = crossChainCore.getProvider("Wormhole");
-    const { account, signAndSubmitTransaction } = useWallet();
+export default function CreateOfferModal({ open, setOpen, token, tokenAddr, balance }: CreateOfferModalProps) {
+    const collateralToken = testnetTokens["Aptos"];
+    const { sourceChain, sponsorAccount, provider } = useApp()
+    const { aptosBalance, originBalance } = useUSDCBalance()
+    const { account, signAndSubmitTransaction, wallet, signTransaction } = useWallet();
     const [isBuy, setIsBuy] = useState(true);
     const [tokenprice, setTokenPrice] = useState<string>('');
     const [desiredAmount, setDesiredAmount] = useState('')
     const [collateralAmount, setCollateralAmount] = useState(0);
     const [acturalPrice, setActuralPrice] = useState(0);
-    // const [selectedCollateral, setSelectedCollateral] = useState("APT")
     const [selectedCollateral, setSelectedCollateral] = useState<collateralProps>(collateral_assets[0])
     const [orderType, setOrderType] = useState<string>("full");
     const isFullMatch = orderType === "full"; // boolean
@@ -74,7 +75,6 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
         const collateral = priceInApt * Number(desiredAmount || 0);
         setCollateralAmount(collateral);
     };
-
     const handleDesiredAmount = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         if (value === "" || value === ".") {
@@ -93,28 +93,75 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
     const createOffer = async () => {
         if (!account) return [];
 
-        const price = (Number(tokenprice) / priceInUsd) * Math.pow(10, (selectedCollateral.decimals || 0));
+        const price = (Number(tokenprice) / priceInUsd) * Math.pow(10, (collateralToken.decimals || 0));
         const amount = Number(desiredAmount) * 10000
 
         try {
-            const transaction: InputTransactionData = {
-                data: {
-                    function: `${moduleAddress}::premarket::create_offer_entry`,
-                    typeArguments: [],
-                    functionArguments: [
-                        tokenAddr,
-                        price,
-                        amount,
-                        isBuy,
-                        isFullMatch,
-                        selectedCollateral.address
-                    ]
-                }
+            const collateral = Number(tokenprice) / priceInUsd;
+            const transactionData: InputGenerateTransactionPayloadData = {
+                function: `${moduleAddress}::premarket::create_offer_entry`,
+                functionArguments: [
+                    tokenAddr,
+                    price,
+                    amount,
+                    isBuy,
+                    isFullMatch,
+                    collateralToken.tokenId.address
+                ]
             }
-            const response = await signAndSubmitTransaction(transaction);
-            await aptosClient.waitForTransaction({ transactionHash: response.hash });
+            let hash = ""
+            if (sourceChain !== "Aptos") {
+                if (collateral > Number(aptosBalance)) {
+                    const desiredAmount = collateral - Number(aptosBalance);
+                    const quote = await provider?.getQuote({
+                        amount: desiredAmount.toString(),
+                        originChain: sourceChain,
+                        type: "transfer",
+                    });
+                    await provider.transfer({
+                        sourceChain,
+                        wallet,
+                        destinationAddress: account?.address?.toString() ?? "",
+                        mainSinger: sponsorAccount,
+                        amount: desiredAmount.toString(),
+                        sponsorAccount,
+                    })
+                };
+
+                const rawTransaction = await aptosClient.transaction.build.simple({
+                    data: transactionData,
+                    options: {
+                        maxGasAmount: 2000,
+                    },
+                    sender: account.address,
+                    withFeePayer: true,
+                });
+
+                const response = await signTransaction({
+                    transactionOrPayload: rawTransaction,
+                });
+
+                const sponsorAuthenticator = aptosClient.transaction.signAsFeePayer({
+                    signer: sponsorAccount,
+                    transaction: rawTransaction,
+                });
+
+                const txnSubmitted = await aptosClient.transaction.submit.simple(
+                    {
+                        transaction: rawTransaction,
+                        senderAuthenticator: response.authenticator,
+                        feePayerAuthenticator: sponsorAuthenticator,
+                    }
+                );
+
+                hash = txnSubmitted.hash;
+            } else {
+                const response = await signAndSubmitTransaction({ data: transactionData });
+                hash = response.hash;
+            }
+            await aptosClient.waitForTransaction({ transactionHash: hash });
             toast.success(`Transaction completed`, {
-                action: <a target="_blank" href={getTxnOnExplorer(response.hash)} style={{ color: "green", textDecoration: "underline" }}>View Txn</a>,
+                action: <a target="_blank" href={getTxnOnExplorer(hash)} style={{ color: "green", textDecoration: "underline" }}>View Txn</a>,
                 icon: <IoCheckmark />
             });
             setOpen(false)
@@ -125,8 +172,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
     };
 
     const handleNextClick = () => {
-        const orderValue = Number(tokenprice) * Number(desiredAmount);
-        // if (orderValue < 10) {
+        // if (Number(desiredAmount) < 10) {
         //     setIsError(true);
         //     return;
         // }
@@ -214,19 +260,19 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
                 <div className="bg-card-bg rounded-md p-4">
                     <div className="flex justify-between items-center mb-2 text-tertiary-text-color">
                         <PSmall>Collateral</PSmall>
-                        <PSmall className="flex gap-1">Bal. <WalletBalance /></PSmall>
+                        <PSmall className="flex gap-1">Bal. {balance}</PSmall>
                     </div>
                     <div className="flex items-center justify-between text-start mt-4">
                         <H6>{collateralAmount}</H6>
                         <DropdownMenu>
                             <DropdownMenuTrigger className="py-2 px-3 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer gap-2">
-                                <Image src={selectedCollateral.icon ?? ''} alt="token-icon" height={20} width={20} className="rounded-full" />
-                                {selectedCollateral.symbol}
-                                <IoIosArrowDown className='ms-2' />
+                                <Image src={`/media/usdc.png`} alt={collateralToken.symbol} height={20} width={20} className="rounded-full" />
+                                {collateralToken.symbol}
+                                {/* <IoIosArrowDown className='ms-2' /> */}
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="bg-secondary-button-color w-40 rounded-md">
                                 <DropdownMenuSeparator />
-                                {
+                                {/* {
                                     collateral_assets.map((coll, i) => {
                                         return (
                                             <DropdownMenuItem
@@ -241,7 +287,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
                                             </DropdownMenuItem>
                                         )
                                     })
-                                }
+                                } */}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

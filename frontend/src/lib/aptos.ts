@@ -1,15 +1,15 @@
 
-import { network } from "@/utils/env";
-import { Aptos, AptosConfig, NetworkToNetworkName } from "@aptos-labs/ts-sdk";
+import { NETWORK } from "@/utils/env";
+import { Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 
 export function getTxnOnExplorer(hash: string) {
-    return `https://explorer.aptoslabs.com/txn/${hash}?network=${network}`
+    return `https://explorer.aptoslabs.com/txn/${hash}?network=${NETWORK}`
 }
 
 const aptosClient = new Aptos(
     new AptosConfig({
-        network: NetworkToNetworkName[network]
+        network: NETWORK
     })
 );
 
-export default aptosClient
+export default aptosClient;
