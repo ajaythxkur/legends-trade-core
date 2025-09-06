@@ -166,27 +166,14 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                                             ? "Claimed"
                                                             : "Pending"
                                                     : "Pending"} */}
-
-
                                             {
                                                 isBuyer &&
                                                 (order.is_settled ? "Settled" : (order.is_claimed ? "Claimed" : "Pending"))
                                             }
+                                            
                                             {
                                                 isSeller &&
                                                 (order.is_settled ? "Settled" : (order.is_claimed ? "Claimed" : "Pending"))
-                                            }
-                                            {
-                                                // order.is_claimed
-                                                //     ? "Claimed"
-                                                //     : "Pending"
-                                                // : isSeller
-                                                //     ? order.is_settled
-                                                //         ? "Settled"
-                                                //         : order.is_claimed
-                                                //             ? "Claimed"
-                                                //             : "Pending"
-                                                //     : "Pending"
                                             }
                                         </Badge>
                                     </TableCell>

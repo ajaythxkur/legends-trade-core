@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import CreateOrder from "./createorder";
-import { PExtraSmall, PLarge, PSmall } from "@/components/ui/typography";
+import { H1, H3, H4, PExtraSmall, PLarge, PSmall } from "@/components/ui/typography";
 import Image from "next/image";
 import { PremarketSvg } from "@/components/icons/icons";
 import { Badge } from "@/components/ui/badge";
@@ -20,14 +20,24 @@ interface BuySellCardProps {
 export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySellCardProps) {
     const { account } = useWallet();
     const { openDrawer } = useDrawer();
-    // const filteredOffers = offers.filter((offer) => {
-    //     if (fillType === 'all') return true
-    //     if (fillType == 'partial') return !offer.is_full_match
-    //     if (fillType == 'full') return offer.is_full_match
-    // })
 
     if (loading) return <OffersSkeleton />
-    if (offers.length === 0) return <Empty title={`No ${type === 'buy' ? 'buying' : 'selling'} offers yet.`} />
+    if (offers.length === 0) return <Empty title={`No ${type === 'buy' ? 'buying' : 'selling'} offers.`} />
+    // if (tokenInfo.status === 1) return (
+    //     <>
+    //         <H4>Settle Ended - Token Stats:</H4>
+    //         <div className="grid grid-cols-2 gap-4 mt-4">
+    //             <div className="space-y-4 p-4 rounded-2xl bg-bottom-layer-1 text-center shadow-md">
+    //                 <H4>Total Offers</H4>
+    //                 <H1>{offers.length}</H1>
+    //             </div>
+    //             <div className="space-y-4 p-4 rounded-2xl bg-bottom-layer-1 text-center shadow-md">
+    //                 <H4>Your Offers</H4>
+    //                 <H1>{offers.filter((o) => o.created_by === account?.address.toString()).length}</H1>
+    //             </div>
+    //         </div>
+    //     </>
+    // )
     return (
         <div className="grid gap-4 md:gap-6 grid-cols-1 md:[grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]">
             {offers.map((offer, i) => {
@@ -70,7 +80,6 @@ export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySel
                                 <PExtraSmall className="text-tertiary-text-color mt-2">$ {collateralInUsd}</PExtraSmall>
                             </div>
                         </div>
-                        {/* <div className="flex items-center justify-between"> */}
                         <div className="grid grid-cols-3 items-center">
                             <Badge variant='outline' className='text-xs p-3 py-2.75 w-fit'>{offer.is_full_match ? 'Full' : 'Partial'}</Badge>
                             {

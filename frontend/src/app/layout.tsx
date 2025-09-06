@@ -11,6 +11,7 @@ import NextTopLoader from 'nextjs-toploader';
 import { AppProvider } from "@/contexts/AppProvider";
 import { USDCBalanceProvider } from "@/contexts/USDCBalanceContext";
 import { NETWORK } from "@/utils/env";
+import WalletContextProvider from "@/contexts/WalletProvider";
 
 export const metadata: Metadata = {
   title: "Legends Trade",
@@ -29,6 +30,7 @@ export default function RootLayout({
           <AutoConnectProvider>
             <WalletProvider>
               <USDCBalanceProvider dappNetwork={NETWORK}>
+                <WalletContextProvider>
                 {/* <CrossChainProvider dappNetwork={dappNetwork}> */}
                   <AppProvider>
                     <DrawerProvider>
@@ -36,6 +38,7 @@ export default function RootLayout({
                       {children}
                     </DrawerProvider>
                   </AppProvider>
+                  </WalletContextProvider>
                 {/* </CrossChainProvider> */}
               </USDCBalanceProvider>
             </WalletProvider>

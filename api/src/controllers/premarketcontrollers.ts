@@ -48,11 +48,7 @@ export const getTokens = async (c: Context) => {
         });
 
         // Calculate 24 hours ago timestamp
-        // const twentyFourHoursAgo = BigInt(Date.now() - 24 * 60 * 60 * 1000);
         const twentyFourHoursAgo = BigInt(Math.floor(Date.now() / 1000) - 24 * 60 * 60);
-
-       
-
         const tokensWithMetrics = tokens.map(token => {
             const { offers, ...tokenData } = token;
 
@@ -90,9 +86,10 @@ export const getTokens = async (c: Context) => {
             };
         });
 
-        // return c.json(serialize(tokensWithMetrics), 200);
-        const totaltokens = await prisma.premarketToken.findMany()
-        const totalpages = Math.ceil(totaltokens.length / limit);
+        // const totaltokens = await prisma.premarketToken.findMany()
+        // const totalpages = Math.ceil(totaltokens.length / limit);
+        const totaltokens = await prisma.premarketToken.count()
+        const totalpages = Math.ceil(totaltokens / limit);
         console.log(`pages: ${totalpages}`)
         const result = {
             data: serialize(tokensWithMetrics),
@@ -105,8 +102,6 @@ export const getTokens = async (c: Context) => {
         return c.json({ error: "Failed to fetch tokens" }, 500);
     }
 };
-
-
 
 // get token information
 export const getTokenInfo = async (c: Context) => {
@@ -162,7 +157,7 @@ export const getTokenInfo = async (c: Context) => {
                 lastPrice,
                 volAll: totalVolume,
                 vol24h: twentyFourHourVolume,
-                priceChange, // 👈 new field
+                priceChange, 
             };
         });
 
@@ -197,6 +192,7 @@ export const getOffers = async (c: Context) => {
             where: {
                 token_addr: addr,
                 is_active: true,
+
                 ...(is_buy !== undefined ? { is_buy: is_buy === "false" } : {}),
                 AND: [
                     filltype && filltype !== "all"
@@ -215,68 +211,67 @@ export const getOffers = async (c: Context) => {
             take: limit,
             skip: offset * limit,
         });
-        return c.json(serialize(offers), 200);
+
+        const totalOffers = await prisma.premarketOffer.count({
+            where: { token_addr: addr }
+        });
+
+        const myOffers = userAddr
+            ? await prisma.premarketOffer.count({
+                where: {
+                    token_addr: addr,
+                    created_by: userAddr,
+                },
+            })
+            : 0;
+
+        const totalOrders = await prisma.premarketOrder.count({
+            where: { token_addr: addr }
+        });
+
+        // return c.json(serialize(offers), 200);
+        return c.json(serialize({
+            offers: offers,
+            totalOffers: totalOffers,
+            myOffers: myOffers,
+            totalOrders: totalOrders
+        }), 200);
     } catch (error) {
         console.error(error);
         return c.json({ error: "Failed to fetch offers" }, 500);
     }
 };
 
+// ===========================================================================
+// ===========================================================================
 
-// export const getOffers = async (c: Context) => {
-//     try {
-//         const { addr } = c.req.param();
-//         const userAddr = c.req.query('userAddr');
-//         const filltype = c.req.query("filltype");
-//         const collateral = c.req.query("collateral");
-//         const is_buy = c.req.query("is_buy");
-//         const limit = Math.min(Number(c.req.query("limit")) || 10, 100); // Cap at 100
-//         const offset = Number(c.req.query('offset')) || 0;
+export const updateTokenData = async (c: Context) => {
+    try {
+        const addr = c.req.query('addr');
+        if (!addr) {
+            return c.json({ error: "token address missing" }, 400);
+        }
 
-//         const currentToken = await prisma.premarketToken.findUnique({
-//             where: {
-//                 token_addr: addr,
-//                 status: { in: [1, 3] }
-//             }
-//         });
+        const name = c.req.query('name') ?? undefined;
+        const symbol = c.req.query('symbol') ?? undefined;
+        const temp_starts_at = c.req.query('temp_starts_at') ?? undefined;
+        const temp_ends_at = c.req.query('temp_ends_at') ?? undefined;
+        const image = c.req.query('image') ?? undefined;
 
-//         if (!currentToken) {
-//             return c.json({ error: "Token not found or inactive" }, 404);
-//         }
+        const updated = await prisma.premarketToken.update({
+            where: { token_addr: addr },
+            data: {
+                ...(name && { name }),
+                ...(symbol && { symbol }),
+                ...(temp_starts_at && { temp_starts_at: BigInt(temp_starts_at) }),
+                ...(temp_ends_at && { temp_ends_at: BigInt(temp_ends_at) }),
+                ...(image && { image: image }),
+            },
+        });
 
-//         const whereConditions: any = {
-//             token_addr: addr,
-//             is_active: true
-//         };
-
-//         // filters
-//         if (is_buy === "true" || is_buy === "false") {
-//             whereConditions.is_buy = is_buy === "false";
-//         }
-
-//         if (filltype && filltype !== "all") {
-//             whereConditions.is_full_match = filltype === "full";
-//         }
-
-//         if (collateral && collateral !== "all") {
-//             whereConditions.collateral_asset = collateral;
-//         }
-
-//         // Exclude user's own offers if userAddr is provided
-//         if (userAddr && userAddr.trim() !== "") {
-//             whereConditions.created_by = { not: userAddr };
-//         }
-
-//         const offers = await prisma.premarketOffer.findMany({
-//             where: whereConditions,
-//             take: limit,
-//             skip: offset * limit,
-//             orderBy: { ts: 'desc' } // Add consistent ordering
-//         });
-
-//         return c.json(serialize(offers), 200);
-//     } catch (error) {
-//         console.error('Error fetching offers:', error);
-//         return c.json({ error: "Failed to fetch offers" }, 500);
-//     }
-// };
+        return c.json(serialize(updated), 200);
+    } catch (err) {
+        console.error("updateTokenData error", err);
+        return c.json({ error: "failed to update token" }, 500);
+    }
+};

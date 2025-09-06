@@ -1,3 +1,4 @@
+'use client'
 import { P, PExtraSmall, PLarge, PSmall } from "@/components/ui/typography";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -10,7 +11,9 @@ import { Token } from "@/types/premarket";
 import CountDownBadge from "@/components/CountDownBadge";
 import dayjs from "dayjs";
 import PaginationNew from "@/components/PaginationNew";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu";
+import { IoIosArrowDown } from "react-icons/io";
 interface DashTabsProps {
     tokens: Token[];
     total: number;
@@ -19,13 +22,41 @@ interface DashTabsProps {
     loading: boolean
 }
 export default function DashTabs({ tokens, total, offset, setOffset, loading }: DashTabsProps) {
+    const tokenstatus = ['all', 'ended', 'not started', 'ongoing'];
+    const [currentStatus, setCurrentStatus] = useState('all');
     return (
         <Tabs defaultValue="premarket" className="mt-6 lg:mt-8 xl:mt-10 2xl:mt-12">
-            <TabsList>
-                <TabsTrigger value="premarket">PreMarket</TabsTrigger>
-                <TabsTrigger value="points">Points</TabsTrigger>
-                <TabsTrigger value="launchpad">Launchpad</TabsTrigger>
-            </TabsList>
+            <div className="flex justify-between items-center gap-4">
+                <TabsList>
+                    <TabsTrigger value="premarket">PreMarket</TabsTrigger>
+                    <TabsTrigger value="points">Points</TabsTrigger>
+                    <TabsTrigger value="launchpad">Launchpad</TabsTrigger>
+                </TabsList>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
+                        Status<IoIosArrowDown className='ms-2' />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuLabel>Type </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {
+                            tokenstatus.map((t, i) => {
+                                return (
+                                    <DropdownMenuItem
+                                        key={i}
+                                        onClick={() => setCurrentStatus(t)}
+                                        className={`capitalize ${currentStatus === t ? 'bg-primary-button-color text-action-text-color' : ''} `}
+                                    >
+                                        {t}
+                                    </DropdownMenuItem>
+                                )
+                            })
+                        }
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
 
             {/* Premarket tab content */}
             <TabsContent value="premarket" className="mt-4 lg:mt-8">

@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import DashTabs from "./dashtabs";
 import { useCallback, useEffect, useState } from "react";
 import { Token, UserData } from "@/types/premarket";
-import { truncateAddress, useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import backendApi from "@/utils/backendApi";
 import SpinnerLoading from "@/components/SpinnerLoading";
 import Empty from "@/components/Empty";
-import WalletBalance from "@/components/WalletBalance";
+import shortAddress from "@/utils/shortAddress";
 
 export default function Body() {
     const { account, isLoading } = useWallet()
@@ -22,9 +22,8 @@ export default function Body() {
     const [loading, setLoading] = useState(false)
 
     const getUserData = async () => {
-        if (!account) return;
         try {
-            const response = await backendApi.getUserData(String(account.address))
+            const response = await backendApi.getUserData(String(account?.address))
             setUserData(response.data)
         } catch (err) {
             console.log(err)
@@ -32,10 +31,9 @@ export default function Body() {
     }
 
     const getUserPremarketTokens = useCallback(async () => {
-        if (!account) return;
         setLoading(true)
         try {
-            const response = await backendApi.getUserPremarketTokens(String(account.address), 10, offset)
+            const response = await backendApi.getUserPremarketTokens(String(account?.address), 10, offset)
             setTokens(response.data.tokens);
             setTotal(response.data.total);
         } catch (error) {
@@ -55,14 +53,12 @@ export default function Body() {
 
     if (isLoading) return <SpinnerLoading />;
     if (!account) return <Empty title="Wallet not connected" />;
-    // if (!userData && !tokens) return <SpinnerLoading />;
     return (
         <>
             <div className="md:p-4">
                 <div className="flex items-center gap-4">
                     <Image src="/media/ido-token.png" alt="user-img" height={40} width={40} />
-                    <H6 className="text-primary-text-color font-bold flex gap-4 items-center">{truncateAddress(String(account?.address))}<LuCopy /></H6>
-                    <WalletBalance />
+                    <H6 className="text-primary-text-color font-bold flex gap-4 items-center">{shortAddress(String(account?.address))}<LuCopy /></H6>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 justify-between mt-6 lg:mt-8 xl:mt-10 2xl:mt-12">

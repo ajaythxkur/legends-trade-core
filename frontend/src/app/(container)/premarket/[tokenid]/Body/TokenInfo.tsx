@@ -47,7 +47,7 @@ export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
 
             <div className="text-center pt-4 md:pt-0">
                 <div className="flex items-center gap-2">
-                    <PLarge>$ {vol24h}</PLarge>
+                    <PLarge>$ {vol24h.toFixed(4)}</PLarge>
                     {/* <Badge variant="negative">- 3.2%</Badge> */}
                 </div>
                 <PSmall className="text-sm text-tertiary-text-color">24h Volume</PSmall>
@@ -55,7 +55,7 @@ export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
 
             <div className="text-center  mt-4 md:mt-0">
                 <div className="flex items-center gap-2">
-                    <PLarge>$ {totalVolume}</PLarge>
+                    <PLarge>$ {totalVolume.toFixed(4)}</PLarge>
                     {/* <Badge variant="positive">+ 3.2%</Badge> */}
                 </div>
                 <PSmall className="text-sm text-tertiary-text-color">Total volume</PSmall>

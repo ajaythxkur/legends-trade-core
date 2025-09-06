@@ -1,6 +1,8 @@
+import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dispatch, SetStateAction } from "react";
 import { IoIosArrowDown } from "react-icons/io";
+import { LuFilter } from "react-icons/lu";
 
 interface FilterProps {
     fillType: string;
@@ -29,7 +31,7 @@ export default function Filters({ fillType, setFillType, collateral, setCollater
         <>
             {/* <Button variant="ghost" className="w-fit" >
                 <span className="hidden sm:block">Filters</span>
-                <LuFilter className="h-3 w-3"/>
+                <LuFilter className="h-4 w-4"/>
             </Button> */}
             <div className="flex items-center gap-4">
                 <DropdownMenu>

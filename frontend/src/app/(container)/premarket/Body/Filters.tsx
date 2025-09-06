@@ -34,10 +34,10 @@ export default function Filters({ setSortOrder, setNetwork, setDebounce, debounc
         }
     ]
     return (
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 md:gap-4 items-center">
             {/* sortby */}
             <DropdownMenu>
-                <DropdownMenuTrigger className="py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
+                <DropdownMenuTrigger className="p-2 md:py-3.5 md:px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
                     Sort<IoIosArrowDown className='ms-2' />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
@@ -49,7 +49,7 @@ export default function Filters({ setSortOrder, setNetwork, setDebounce, debounc
 
             {/* network */}
             <DropdownMenu>
-                <DropdownMenuTrigger className="py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
+                <DropdownMenuTrigger className="p-2 md:py-3.5 md:px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
                     Network <IoIosArrowDown className='ms-2' />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
@@ -71,14 +71,14 @@ export default function Filters({ setSortOrder, setNetwork, setDebounce, debounc
 
             {/* Search */}
             <div className="flex items-center gap-2 bg-card-bg text-input-field-text-color rounded px-2 md:px-4.5 w-full">
-                <div className=""><LuSearch className="text-tag-stroke-color h-5 w-5" /></div>
+                <div className=""><LuSearch className="text-tag-stroke-color h-4 w-4 md:h-5 md:w-5" /></div>
                 <div className="w-fit md:w-full overflow-hidden">
                     <input
                         type="text"
                         value={debounce}
                         onChange={(e) => setDebounce(e.target.value)}
                         placeholder="Search by token name"
-                        className="pe-4 py-3 focus:outline-none"
+                        className="pe-4 py-2 md:py-3 focus:outline-none w-full"
                     />
                 </div>
                 {
