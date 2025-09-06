@@ -27,18 +27,18 @@ export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySel
     // })
 
     if (loading) return <OffersSkeleton />
-    if (offers.length === 0) return <Empty title="No offers found." />
+    if (offers.length === 0) return <Empty title={`No ${type === 'buy' ? 'buying' : 'selling'} offers yet.`} />
     return (
         <div className="grid gap-4 md:gap-6 grid-cols-1 md:[grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]">
             {offers.map((offer, i) => {
                 const aptPrice = 5;
+                const filled_amount = Number(offer.filled_amount) / 10000;
                 const amount = Number(offer.amount) / 10000;
                 const price = (Number(offer.price) / Math.pow(10, 8)) * aptPrice
                 const collateralInUsd = amount * price
                 const collateral = collateralInUsd / aptPrice
                 return (
                     <div key={i} className={`bg-card-bg rounded-lg px-4 py-5 border-2 ${type === 'buy' ? 'border-card-border-buy' : 'border-card-border-sell'}  flex flex-col`}>
-                        {/* <div className="flex justify-between items-start mb-4 text-secondary-text-color"> */}
                         <div className="grid grid-cols-3 mb-4 text-secondary-text-color">
                             <div className="text-start">
                                 <PSmall>Offer</PSmall>
@@ -77,7 +77,6 @@ export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySel
                                 offer.created_by === account?.address.toString() ?
                                     <PExtraSmall className="text-tertiary-text-color text-center">My Offer</PExtraSmall>
                                     : <span>{''}</span>
-
                             }
                             <Button
                                 size="md"
@@ -86,6 +85,7 @@ export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySel
                                         type={type}
                                         token={tokenInfo}
                                         amount={amount}
+                                        filled_amount={filled_amount}
                                         collateral={collateral}
                                         price={price}
                                         offer={offer}

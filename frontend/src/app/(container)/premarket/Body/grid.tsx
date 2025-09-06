@@ -93,14 +93,14 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
                             <div className="flex justify-between items-center">
                                 <PSmall className="text-sm text-tertiary-text-color">24 hr Vol</PSmall>
                                 <div className="flex gap-2 items-center flex-wrap justify-end">
-                                    <PLarge className="font-medium text-secondary-text-color">$ {vol24h}</PLarge>
+                                    <PLarge className="font-medium text-secondary-text-color">$ {vol24h.toFixed(4)}</PLarge>
                                     {/* <Badge variant="negative">+ 3.2%</Badge> */}
                                 </div>
                             </div>
                             <div className="flex justify-between items-center mb-0">
                                 <PSmall className="text-sm text-tertiary-text-color">Total volume</PSmall>
                                 <div className="flex gap-2 items-center flex-wrap justify-end">
-                                    <PLarge className="font-medium text-secondary-text-color">$ {totalVolume}</PLarge>
+                                    <PLarge className="font-medium text-secondary-text-color">$ {totalVolume.toFixed(4)}</PLarge>
                                     {/* <Badge variant="positive">+ 3.2%</Badge> */}
                                 </div>
                             </div>
@@ -115,15 +115,15 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
                                             <PSmall className="text-sm text-tertiary-text-color">Settle time start</PSmall>
                                             <PLarge className="text-sm text-secondary-text-color flex flex-col justify-end items-end">
                                                 {/* <span>{token.temp_starts_at ? token.temp_starts_at : ''}</span> */}
-                                                <span>{token.temp_starts_at ? dayjs(token.temp_starts_at).format("YYYY-MM-DD") : '---- -- --'}</span>
-                                                <span className="text-xs">{token.temp_starts_at ? dayjs(token.temp_starts_at).format("hh:mm A") : '-- : -- --'}</span>
+                                                <span>{token.temp_starts_at ? dayjs.unix(Number(token.temp_starts_at)).format("YYYY-MM-DD") : '---- -- --'}</span>
+                                                <span className="text-xs">{token.temp_starts_at ? dayjs.unix(Number(token.temp_starts_at)).format("hh:mm A") : '-- : -- --'}</span>
                                             </PLarge>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <PSmall className="text-sm text-tertiary-text-color">Settle time end</PSmall>
                                             <PLarge className="text-sm text-secondary-text-color flex flex-col justify-end items-end">
-                                                <span>{token.temp_ends_at ? dayjs(token.temp_ends_at).format("YYYY-DD-MM") : '---- -- --'}</span>
-                                                <span className="text-xs">{token.temp_ends_at ? dayjs(token.temp_ends_at).format("hh:mm A") : '-- : -- --'}</span>
+                                                <span>{token.temp_ends_at ? dayjs.unix(Number(token.temp_ends_at)).format("YYYY-DD-MM") : '---- -- --'}</span>
+                                                <span className="text-xs">{token.temp_ends_at ? dayjs.unix(Number(token.temp_ends_at)).format("hh:mm A") : '-- : -- --'}</span>
                                             </PLarge>
                                         </div>
                                         <div className="flex justify-between items-center">

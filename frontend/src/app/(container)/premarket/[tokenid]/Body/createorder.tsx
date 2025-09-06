@@ -20,22 +20,24 @@ import { WalletSelector } from "@/components/connectwallet"
 interface CreateOrderProps {
     type: string;
     token: Token
-    amount: number
+    amount: number;
+    filled_amount: number;
     collateral: number
     price: number
     offer: TokenOffers
 }
 
-export default function CreateOrder({ type, token, amount, collateral, price, offer }: CreateOrderProps) {
+export default function CreateOrder({ type, token, amount, filled_amount, collateral, price, offer }: CreateOrderProps) {
     const { connected, account, signAndSubmitTransaction } = useWallet()
     const { closeDrawer } = useDrawer();
-    const [desiredAmount, setDesiredAmount] = useState(0)
+    // const [desiredAmount, setDesiredAmount] = useState(0)
+    const [desiredAmount, setDesiredAmount] = useState('')
     const [collateralAmount, setCollateralAmount] = useState<number>(collateral);
 
     // const [isMarketChartOpen, setIsMarketChartOpen] = useState(false)
 
     const [sliderValue, setSliderValue] = useState(0) // percentage (0 → 100)
-    const maxAmount = amount
+    const maxAmount = amount - filled_amount;
     const currentCount = Math.round((sliderValue / 100) * maxAmount)
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -52,25 +54,47 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
     const handleSliderChange = (val: number[]) => {
         const percent = val[0]
         setSliderValue(percent)
-        setDesiredAmount(Math.round((percent / 100) * maxAmount))
-        setCollateralAmount((desiredAmount * price) / 5) // 5 is apt price static
+        // setDesiredAmount(Math.round((percent / 100) * maxAmount))
+        // setCollateralAmount((desiredAmount * price) / 5) // 5 is apt price static
+        setDesiredAmount(Math.round((percent / 100) * maxAmount).toString())
+        setCollateralAmount((Number(desiredAmount) * price) / 5) // 5 is apt price static
     }
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = Number(e.target.value)
-        if (value > amount) {
-            setDesiredAmount(amount)
-        } else {
-            setDesiredAmount(value)
-        }
+        const value = e.target.value
+
+        setDesiredAmount(value)
+        // if (value > amount) {
+        //     setDesiredAmount(amount)
+        // } else {
+        //     setDesiredAmount(value)
+        // }
         // clamp between 0 and maxAmount
-        const clamped = Math.min(Math.max(value, 0), maxAmount)
+        const clamped = Math.min(Math.max(Number(value), 0), maxAmount)
         setSliderValue((clamped / maxAmount) * 100)
         setCollateralAmount((clamped * price) / 5) // 5 is apt price static
     }
 
+    // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const value = Number(e.target.value)
+    //     if (value > amount) {
+    //         setDesiredAmount(amount)
+    //     } else {
+    //         setDesiredAmount(value)
+    //     }
+    //     // clamp between 0 and maxAmount
+    //     const clamped = Math.min(Math.max(Number(value), 0), maxAmount)
+    //     setSliderValue((clamped / maxAmount) * 100)
+    //     setCollateralAmount((clamped * price) / 5) // 5 is apt price static
+    // }
+
+
+
+
+
     const onCreateOrder = async () => {
         if (!account) return;
-        const amount = desiredAmount * 10000
+        const amount = Number(desiredAmount) * 10000
         const transaction: InputTransactionData = {
             data: {
                 function: `${moduleAddress}::premarket::create_order_entry`,
@@ -86,7 +110,6 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
             // wait for transaction
             await aptosClient.waitForTransaction({ transactionHash: response.hash });
             toast.success('order created successfully')
-
         } catch (error) {
             console.log(error);
             toast.error(`Failed to create Order: ${error}`)
@@ -96,10 +119,12 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
     useEffect(() => {
         if (offer.is_full_match) {
             // full match → lock to full amount
-            setDesiredAmount(amount)
+            // setDesiredAmount(amount)
+            setDesiredAmount(amount.toString())
             setCollateralAmount((amount * price) / 5)
         } else {
-            setDesiredAmount(0)
+            // setDesiredAmount(0)
+            setDesiredAmount('')
             setCollateralAmount(0)
             setSliderValue(0)
         }
@@ -121,7 +146,7 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
             <div className="bg-card-bg p-4 rounded-md mt-4">
                 <div className="flex justify-between items-center">
                     <PSmall className="text-secondary-text-color">Desired Amount you buy</PSmall>
-                    <PSmall className="text-secondary-text-color">Max {amount}</PSmall>
+                    <PSmall className="text-secondary-text-color">Max {maxAmount}</PSmall>
                 </div>
 
                 <div className="flex items-center justify-between mt-4 min-w-0 overflow-hidden">
@@ -196,7 +221,8 @@ export default function CreateOrder({ type, token, amount, collateral, price, of
                             value={[sliderValue]}
                             onValueChange={handleSliderChange}
                             max={100}
-                            step={1}
+                            // step={1}
+                            step={0.001}
                             className="w-full mt-3"
                         />
 

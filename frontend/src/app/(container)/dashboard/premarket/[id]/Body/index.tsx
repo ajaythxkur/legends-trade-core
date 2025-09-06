@@ -80,7 +80,15 @@ export default function Body({ id }: { id: string }) {
                             <Image src={`${tokenInfo.image ? tokenInfo.image : '/media/token-img.png'}`} alt="token-image" width={50} height={50} className="rounded-full" />
                             {
                                 tokenInfo.chain_type === 0 &&
-                                <Image src="/media/aptos.png" alt="chain-icon" height={14} width={14} className="absolute bottom-0 right-0" />
+                                <Image src="/media/aptos.svg" alt="token-image" width={16} height={16} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
+                            }
+                            {
+                                tokenInfo.chain_type === 1 &&
+                                <Image src="/media/solana.jpg" alt="token-image" width={16} height={16} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
+                            }
+                            {
+                                tokenInfo.chain_type === 2 &&
+                                <Image src="/media/ethereum.jpg" alt="token-image" width={16} height={16} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
                             }
                         </div>
                         <div>
@@ -122,8 +130,8 @@ export default function Body({ id }: { id: string }) {
                     {/* Settle Time Start */}
                     <div className="text-center  pt-4 md:pt-0">
                         <PMedium className="text-sm text-secondary-text-color flex flex-col">
-                            <span>{tokenInfo.temp_starts_at ? dayjs(tokenInfo.temp_starts_at).format("YYYY-DD-MM") : '---- -- --'}</span>
-                            <span className="text-xs">{tokenInfo.temp_starts_at ? dayjs(tokenInfo.temp_starts_at).format("hh:mm A") : '-- : -- --'}</span>
+                            <span>{tokenInfo.temp_starts_at ? dayjs.unix(Number(tokenInfo.temp_starts_at)).format("YYYY-DD-MM") : '---- -- --'}</span>
+                            <span className="text-xs">{tokenInfo.temp_starts_at ? dayjs.unix(Number(tokenInfo.temp_starts_at)).format("hh:mm A") : '-- : -- --'}</span>
                         </PMedium>
                         <PExtraSmall className="text-tertiary-text-color mt-2">Settle time start</PExtraSmall>
                     </div>
@@ -131,8 +139,8 @@ export default function Body({ id }: { id: string }) {
                     {/* Settle Time end */}
                     <div className="text-center  pt-4 md:pt-0">
                         <PMedium className="text-sm text-secondary-text-color flex flex-col">
-                            <span>{tokenInfo.temp_ends_at ? dayjs(tokenInfo.temp_ends_at).format("YYYY-DD-MM") : '---- -- --'}</span>
-                            <span className="text-xs">{tokenInfo.temp_ends_at ? dayjs(tokenInfo.temp_ends_at).format("hh:mm A") : '-- : -- --'}</span>
+                            <span>{tokenInfo.temp_ends_at ? dayjs.unix(Number(tokenInfo.temp_ends_at)).format("YYYY-DD-MM") : '---- -- --'}</span>
+                            <span className="text-xs">{tokenInfo.temp_ends_at ? dayjs.unix(Number(tokenInfo.temp_ends_at)).format("hh:mm A") : '-- : -- --'}</span>
                         </PMedium>
                         <PExtraSmall className="text-tertiary-text-color mt-2">Settle time end</PExtraSmall>
                     </div>

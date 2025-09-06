@@ -33,13 +33,12 @@ export default function Offers({ offers, tokenInfo }: TradesProps) {
                     offers.map((offer, index) => {
                         const aptPrice = 5;
                         const amount = Number(offer.amount) / 10000;
+                        const filled_amount = Number(offer.filled_amount) / 10000;
                         const price = (Number(offer.price) / Math.pow(10, 8)) * aptPrice
                         const collateralInUsd = amount * price
                         const collateral = collateralInUsd / aptPrice
 
-                        // const filledPercentage = ( Number(offer.filled_amount) / Number(offer.amount))  * 100
-                        const filledPercentage = (1 / amount) * 100;
-
+                        const filledPercentage = (filled_amount / amount) * 100
 
                         return (
                             <TableRow key={index} onClick={() => openDrawer(
@@ -53,7 +52,9 @@ export default function Offers({ offers, tokenInfo }: TradesProps) {
                                 <TableCell>
                                     <span className="flex gap-2 items-center">
                                         <div className="h-4 w-4 bg-positive-text rounded-full"></div>
-                                        {truncateAddress(offer.offer_addr)}
+                                        {/* {truncateAddress(offer.offer_addr)} */}
+                                        {index + 1} {/* Serial number for now */}
+
                                     </span>
                                 </TableCell>
                                 <TableCell className="text-center ">
@@ -77,7 +78,7 @@ export default function Offers({ offers, tokenInfo }: TradesProps) {
 
                                     <div className="text-center">
                                         <CircularProgress percentage={filledPercentage} size="sm" color="purple" />
-                                        <p>{filledPercentage}%</p>
+                                        {/* <p>{filledPercentage}%</p> */}
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-center">{offer.orders.filter((o) => o.is_settled).length}/{offer.orders.length}</TableCell>
@@ -85,7 +86,7 @@ export default function Offers({ offers, tokenInfo }: TradesProps) {
                                 <TableCell className="text-center">
                                     {
                                         offer.is_active ? (
-                                            offer.filled_amount === offer.amount ? (
+                                            filled_amount === amount ? (
                                                 <Badge variant="info">Filled</Badge>
                                             ) : (
                                                 <Badge variant="positive">Active</Badge>

@@ -70,16 +70,16 @@ export default function DashTabs({ tokens, total, offset, setOffset, loading }: 
                                     <div className="flex justify-between items-center mt-4">
                                         <PSmall className="text-tertiary-text-color">Settle starts</PSmall>
                                         <div className="text-primary-text-color text-end">
-                                            <P>{token.temp_starts_at ? dayjs(token.temp_starts_at).format("YYYY-DD-MM") : '---- -- --'}</P>
-                                            <PExtraSmall>{token.temp_starts_at ? dayjs(token.temp_starts_at).format("hh:mm A") : '-- : -- --'}</PExtraSmall>
+                                            <P>{token.temp_starts_at ? dayjs.unix(Number(token.temp_starts_at)).format("YYYY-DD-MM") : '---- -- --'}</P>
+                                            <PExtraSmall>{token.temp_starts_at ? dayjs.unix(Number(token.temp_starts_at)).format("hh:mm A") : '-- : -- --'}</PExtraSmall>
                                         </div>
                                     </div>
 
                                     <div className="flex justify-between items-center mt-4">
                                         <PSmall className="text-tertiary-text-color">Settle Ends</PSmall>
                                         <div className="text-primary-text-color text-end">
-                                            <P>{token.temp_ends_at ? dayjs(token.temp_ends_at).format("YYYY-DD-MM") : '---- -- --'}</P>
-                                            <PExtraSmall>{token.temp_ends_at ? dayjs(token.temp_ends_at).format("hh:mm A") : '-- : -- --'}</PExtraSmall>
+                                            <P>{token.temp_ends_at ? dayjs.unix(Number(token.temp_ends_at)).format("YYYY-DD-MM") : '---- -- --'}</P>
+                                            <PExtraSmall>{token.temp_ends_at ? dayjs.unix(Number(token.temp_ends_at)).format("hh:mm A") : '-- : -- --'}</PExtraSmall>
                                         </div>
                                     </div>
                                 </div>

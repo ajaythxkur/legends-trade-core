@@ -2,15 +2,15 @@
 
 # Deploy
 ```sh
-aptos move deploy-object --profile default --address-name legends_trade --named-addresses owner=0xc21eef93e0188165bc9f303e7f8b7f24064db5e6981d1cd092ee4a4b84ac38af --included-artifacts none 
+aptos move deploy-object --profile default --address-name legends_trade --named-addresses owner=0x793de02bc1cc8702883c4bd4de3d9381c96f07405cbc6fffa58af656e701a576 --included-artifacts none 
 ```
 
 # Object Address (testnet)
 ```sh
-0x6b03b69b59eb1f4046dd3fd0b8efff2fa93660d2ac5e93970348c729ca47266f
+0x2c8c445b802dc23545cf7ff061136e64068f0f02e12c2440ccef0b8ea36786b2
 ```
 
 # Upgrade
 ```sh
-aptos move upgrade-object --address-name legends_trade --object-address 0x6b03b69b59eb1f4046dd3fd0b8efff2fa93660d2ac5e93970348c729ca47266f --named-addresses owner=0x793de02bc1cc8702883c4bd4de3d9381c96f07405cbc6fffa58af656e701a576 --included-artifacts none --profile default
+aptos move upgrade-object --address-name legends_trade --object-address 0x2c8c445b802dc23545cf7ff061136e64068f0f02e12c2440ccef0b8ea36786b2 --named-addresses owner=0x793de02bc1cc8702883c4bd4de3d9381c96f07405cbc6fffa58af656e701a576 --included-artifacts none --profile default
 ```

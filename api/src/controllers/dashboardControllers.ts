@@ -290,7 +290,7 @@ export const getUserPremarketTokens = async (c: Context) => {
     const total = await prisma.premarketToken.findMany({
       where: { token_addr: { in: tokenAddrs } }
     })
-    const pages= Math.ceil(total.length / limit)
+    const pages = Math.ceil(total.length / limit)
 
     // 5. Merge results
     const result = tokens.map(token => {
@@ -306,7 +306,7 @@ export const getUserPremarketTokens = async (c: Context) => {
     })
 
     // return c.json(serialize(result), 200)
-    return c.json(serialize({tokens:result, total:pages}), 200)
+    return c.json(serialize({ tokens: result, total: pages }), 200)
   } catch (err) {
     console.error(err)
     return c.json({ error: `failed to get user tokens: ${err}` }, 500)
@@ -345,7 +345,8 @@ export const getUserOffers = async (c: Context) => {
     }
 
     // --- Metrics (like getUserOfferTokens) ---
-    const twentyFourHoursAgo = BigInt(Date.now() - 24 * 60 * 60 * 1000);
+    // const twentyFourHoursAgo = BigInt(Date.now() - 24 * 60 * 60 * 1000);
+    const twentyFourHoursAgo = BigInt(Math.floor(Date.now() / 1000) - 24 * 60 * 60);
 
     const offers = token.offers ?? [];
     const lastPrice = offers.length > 0 ? offers[0].price : BigInt(0);
@@ -495,7 +496,7 @@ export const getOffers = async (c: Context) => {
 
           offer_status && offer_status != 'all'
             ? { is_active: offer_status === 'active' }
-            : {}
+            : {},
         ]
       },
       include: {

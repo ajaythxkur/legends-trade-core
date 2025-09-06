@@ -65,16 +65,16 @@ export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
             <div className="text-center  mt-4 md:mt-0">
                 {/* <PLarge>-</PLarge> */}
                 <PLarge className="flex flex-col items-center justify-center">
-                    <span>{tokenInfo.temp_starts_at ? dayjs(tokenInfo.temp_starts_at).format("YYYY-DD-MM") : '---- -- --'}</span>
-                    <span className="text-xs">{tokenInfo.temp_starts_at ? dayjs(tokenInfo.temp_starts_at).format("hh:mm A") : '-- : -- --'}</span>
+                    <span>{tokenInfo.temp_starts_at ? dayjs.unix(Number(tokenInfo.temp_starts_at)).format("YYYY-DD-MM") : '---- -- --'}</span>
+                    <span className="text-xs">{tokenInfo.temp_starts_at ? dayjs.unix(Number(tokenInfo.temp_starts_at)).format("hh:mm A") : '-- : -- --'}</span>
                 </PLarge>
                 <PSmall className="text-tertiary-text-color">Settle time start</PSmall>
             </div>
 
             <div className="text-center mt-4 md:mt-0">
                 <PLarge className="flex flex-col items-center justify-center">
-                    <span>{tokenInfo.temp_ends_at ? dayjs(tokenInfo.temp_ends_at).format("YYYY-DD-MM") : '---- -- --'}</span>
-                    <span className="text-xs">{tokenInfo.temp_ends_at ? dayjs(tokenInfo.temp_ends_at).format("hh:mm A") : '-- : -- --'}</span>
+                    <span>{tokenInfo.temp_ends_at ? dayjs.unix(Number(tokenInfo.temp_ends_at)).format("YYYY-DD-MM") : '---- -- --'}</span>
+                    <span className="text-xs">{tokenInfo.temp_ends_at ? dayjs.unix(Number(tokenInfo.temp_ends_at)).format("hh:mm A") : '-- : -- --'}</span>
                 </PLarge>
                 <PSmall className="text-sm text-tertiary-text-color">Settle time end</PSmall>
             </div>

@@ -126,10 +126,10 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr }: Cr
 
     const handleNextClick = () => {
         const orderValue = Number(tokenprice) * Number(desiredAmount);
-        if (orderValue < 10) {
-            setIsError(true);
-            return;
-        }
+        // if (orderValue < 10) {
+        //     setIsError(true);
+        //     return;
+        // }
         setIsError(false);
         setCurrentStep(2);
     }

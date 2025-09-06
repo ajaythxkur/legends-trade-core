@@ -15,6 +15,7 @@ import { InputTransactionData, useWallet } from "@aptos-labs/wallet-adapter-reac
 import { moduleAddress } from "@/utils/env";
 import aptosClient from "@/lib/aptos";
 import { toast } from "sonner";
+import shortAddress from "@/utils/shortAddress";
 dayjs.extend(relativeTime);
 
 interface TradesDrawerPrps {
@@ -25,6 +26,7 @@ interface TradesDrawerPrps {
 export default function TradesDrawer({ offer, orders, tokenInfo }: TradesDrawerPrps) {
     const { account, signAndSubmitTransaction } = useWallet()
     const { closeDrawer } = useDrawer();
+    const filled_amount = Number(offer.filled_amount) / 10000;
     const amount = Number(offer.amount) / 10000;
     const price = (Number(offer.price) / Math.pow(10, 8)) * 5
 
@@ -46,10 +48,10 @@ export default function TradesDrawer({ offer, orders, tokenInfo }: TradesDrawerP
             const response = await signAndSubmitTransaction(transaction);
             // wait for transaction
             await aptosClient.waitForTransaction({ transactionHash: response.hash });
-            toast.success('offer Canceled Successfully')
+            toast.success('Offer Canceled Successfully')
         } catch (err) {
             console.log(err)
-            toast.success('failed to cancel offer.')
+            toast.success('Failed to cancel offer.')
         }
     }
     return (
@@ -63,7 +65,7 @@ export default function TradesDrawer({ offer, orders, tokenInfo }: TradesDrawerP
                         }
                     </Badge>
                     <PExtraSmall className="tag-text-color">Offer</PExtraSmall>
-                    <P className="primary-text-color">{truncateAddress(offer.offer_addr)}</P>
+                    <P className="primary-text-color">{shortAddress(offer.offer_addr)}</P>
                 </div>
                 <Info className="w-5 h-5 text-tertiary-text-color" />
             </div>
@@ -121,7 +123,7 @@ export default function TradesDrawer({ offer, orders, tokenInfo }: TradesDrawerP
                 </div>
                 <div className="flex justify-between items-center">
                     <PSmall className="text-tertiary-text-color">Filled amount</PSmall>
-                    <PMedium>--/{amount}</PMedium>
+                    <PMedium>{filled_amount}/{amount}</PMedium>
                 </div>
                 <div className="flex justify-between items-center">
                     <PSmall className="text-tertiary-text-color">Settled order</PSmall>
@@ -133,15 +135,15 @@ export default function TradesDrawer({ offer, orders, tokenInfo }: TradesDrawerP
                             {
                                 tokenInfo.status !== 1
                                 && offer.created_by === String(account?.address)
-                                && offer.filled_amount < offer.amount
-                                && settledOrders === orders.length &&
+                                && offer.filled_amount < offer.amount &&
+                                // && settledOrders === orders.length &&
                                 <div className="flex justify-between items-center">
                                     <PSmall className="text-tertiary-text-color">Cancel Offer</PSmall>
                                     <Button
-                                        className="px-4 py-1.75"
+                                        className="px-3  py-2 text-sm"
                                         onClick={() => handleCancelOffer(offer.offer_addr.toString())}
                                     >
-                                        Cancel Offer
+                                        Cancel
                                     </Button>
                                 </div>
                             }

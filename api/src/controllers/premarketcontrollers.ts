@@ -48,7 +48,10 @@ export const getTokens = async (c: Context) => {
         });
 
         // Calculate 24 hours ago timestamp
-        const twentyFourHoursAgo = BigInt(Date.now() - 24 * 60 * 60 * 1000);
+        // const twentyFourHoursAgo = BigInt(Date.now() - 24 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = BigInt(Math.floor(Date.now() / 1000) - 24 * 60 * 60);
+
+       
 
         const tokensWithMetrics = tokens.map(token => {
             const { offers, ...tokenData } = token;
@@ -123,7 +126,8 @@ export const getTokenInfo = async (c: Context) => {
         });
 
         // Calculate 24 hours ago timestamp
-        const twentyFourHoursAgo = BigInt(Date.now() - 24 * 60 * 60 * 1000);
+        // const twentyFourHoursAgo = BigInt(Date.now() - 24 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = BigInt(Math.floor(Date.now() / 1000) - 24 * 60 * 60);
 
         const tokensWithMetrics = tokens.map(token => {
             const { offers, ...tokenData } = token;

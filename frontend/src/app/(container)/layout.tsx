@@ -38,7 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         <BreadCrumb />
                     </div>
 
-                    <div className="lg:flex gap-6 mt-4 lg:mt-8 h-full overflow-y-auto scrollbar-hide">
+                    <div className="lg:flex gap-6 mt-4 lg:mt-6 h-full overflow-y-auto scrollbar-hide">
                         <div className={`p-4 rounded-lg overflow-y-auto bg-bottom-layer-2 scrollbar-hide h-full 
                             ${isVisible ? 'w-full xl:w-3/4 md:hidden lg:block lg:w-[60%]' : 'w-full'} transition-all duration-300 ease-in-out`}>
                             {children}

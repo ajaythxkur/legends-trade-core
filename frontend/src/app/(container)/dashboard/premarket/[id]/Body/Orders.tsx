@@ -6,6 +6,7 @@ import { PExtraSmall } from "@/components/ui/typography";
 import aptosClient from "@/lib/aptos";
 import { TokenOffers, TokenOrder } from "@/types/premarket";
 import { moduleAddress } from "@/utils/env";
+import shortAddress from "@/utils/shortAddress";
 import { InputTransactionData, truncateAddress, useWallet } from "@aptos-labs/wallet-adapter-react";
 import dayjs from "dayjs";
 import { LucideExternalLink } from "lucide-react";
@@ -128,7 +129,7 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                         {order.created_by === String(account.address) ?
                                             'me'
                                             :
-                                            truncateAddress(order.created_by.toString())
+                                            shortAddress(order.created_by.toString())
                                         }
                                     </TableCell>
                                     <TableCell className="text-center ">{dayjs.unix(Number(order.ts)).fromNow()}</TableCell>
@@ -154,8 +155,8 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                                         : "warning"
                                             }
                                         >
-                                            {isBuyer
-                                                ? order.is_claimed
+                                            {/* {isBuyer ?
+                                                order.is_claimed
                                                     ? "Claimed"
                                                     : "Pending"
                                                 : isSeller
@@ -164,11 +165,33 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                                         : order.is_claimed
                                                             ? "Claimed"
                                                             : "Pending"
-                                                    : "Pending"}
+                                                    : "Pending"} */}
+
+
+                                            {
+                                                isBuyer &&
+                                                (order.is_settled ? "Settled" : (order.is_claimed ? "Claimed" : "Pending"))
+                                            }
+                                            {
+                                                isSeller &&
+                                                (order.is_settled ? "Settled" : (order.is_claimed ? "Claimed" : "Pending"))
+                                            }
+                                            {
+                                                // order.is_claimed
+                                                //     ? "Claimed"
+                                                //     : "Pending"
+                                                // : isSeller
+                                                //     ? order.is_settled
+                                                //         ? "Settled"
+                                                //         : order.is_claimed
+                                                //             ? "Claimed"
+                                                //             : "Pending"
+                                                //     : "Pending"
+                                            }
                                         </Badge>
                                     </TableCell>
                                     {
-                                        tokenStatus !== 1 && order.created_by === String(account?.address) ?
+                                        tokenStatus !== 1 && order.created_by === account?.address.toString() ?
                                             <TableCell className="text-center">
                                                 <Button
                                                     className="px-4 py-1.75"
