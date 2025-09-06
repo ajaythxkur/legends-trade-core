@@ -231,11 +231,12 @@ export class WormholeProvider
   async claimCCTPTransfer(
     input: WormholeClaimTransferRequest
   ): Promise<{ destinationChainTxnId: string }> {
+    logger.log(input, "input")
     let { receipt, mainSigner, sponsorAccount } = input;
     if (!this.wormholeRoute) {
       throw new Error("Wormhole route not initialized");
     }
-
+    logger.log("mainSigner", mainSigner)
     logger.log("mainSigner", mainSigner.accountAddress.toString());
 
     let retries = 0;
@@ -309,6 +310,7 @@ export class WormholeProvider
     // Submit transfer transaction from origin chain
     let { originChainTxnId, receipt } = await this.submitCCTPTransfer(input);
     // Claim transfer transaction on destination chain
+    console.log({input})
     const { destinationChainTxnId } = await this.claimCCTPTransfer({
       receipt,
       mainSigner: input.mainSigner,

@@ -8,6 +8,7 @@ module legends_trade::premarket {
     use aptos_framework::fungible_asset::{Self, Metadata, FungibleStore};
     use aptos_framework::timestamp;
     use aptos_framework::primary_fungible_store;
+    use aptos_framework::dispatchable_fungible_asset;
     use aptos_framework::event;
     use legends_trade::chain_type;
 
@@ -402,8 +403,8 @@ module legends_trade::premarket {
         };
         // amount is in bps
         let collateral_amount = (price * amount) / BASIS_POINT_MAX;
-        let asset = primary_fungible_store::withdraw(sender, collateral_asset, collateral_amount);
-        fungible_asset::deposit(offer.collateral, asset);
+        let asset = dispatchable_fungible_asset::withdraw(sender, collateral_asset, collateral_amount);
+        dispatchable_fungible_asset::deposit(offer.collateral, asset);
         move_to(offer_signer, offer);
         event::emit(OfferCreated {
             token_addr,

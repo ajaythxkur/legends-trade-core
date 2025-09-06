@@ -110,6 +110,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                 ]
             }
             let hash = ""
+            console.log(collateralToken)
             if (sourceChain !== "Aptos") {
                 if (collateral > Number(aptosBalance)) {
                     const desiredAmount = collateral - Number(aptosBalance);
@@ -118,11 +119,12 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                         originChain: sourceChain,
                         type: "transfer",
                     });
+                    console.log(quote, desiredAmount)
                     await provider.transfer({
                         sourceChain,
                         wallet,
                         destinationAddress: account?.address?.toString() ?? "",
-                        mainSinger: sponsorAccount,
+                        mainSigner: sponsorAccount,
                         amount: desiredAmount.toString(),
                         sponsorAccount,
                     })

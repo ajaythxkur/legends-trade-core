@@ -12,7 +12,6 @@ interface TokenInfoProps {
 }
 
 export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
-    console.log(tokenInfo)
     const aptPrice = 5; //in used
     const lastprice = (tokenInfo.lastPrice / Math.pow(10, 8)) * aptPrice;
     const vol24h = (tokenInfo.vol24h / Math.pow(10, 8)) * aptPrice;
