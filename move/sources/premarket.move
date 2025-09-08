@@ -9,6 +9,7 @@ module legends_trade::premarket {
     use aptos_framework::timestamp;
     use aptos_framework::primary_fungible_store;
     use aptos_framework::event;
+    use legends_trade::fa_helper;
     use legends_trade::chain_type;
 
     struct Config has key {
@@ -182,7 +183,7 @@ module legends_trade::premarket {
     /// Token premarket is not cancelled
     const ERR_TOKEN_STATUS_NOT_CANCELLED: u64 = 21;
 
-    const SEED: vector<u8> = b"dfssf";
+    const SEED: vector<u8> = b"humankind";
     const BASIS_POINT_MAX: u64 = 10000;
 
     // This function is only called once
@@ -402,8 +403,12 @@ module legends_trade::premarket {
         };
         // amount is in bps
         let collateral_amount = (price * amount) / BASIS_POINT_MAX;
-        let asset = fungible_asset::withdraw(sender, collateral_asset, collateral_amount);
-        fungible_asset::deposit(offer.collateral, asset);
+        let sender_store = primary_fungible_store::ensure_primary_store_exists(
+            signer::address_of(sender),
+            collateral_asset
+        );
+        let asset = fa_helper::withdraw(sender, sender_store, collateral_amount);
+        fa_helper::deposit(offer.collateral, asset);
         move_to(offer_signer, offer);
         event::emit(OfferCreated {
             token_addr,
@@ -447,12 +452,18 @@ module legends_trade::premarket {
         let remaining_collateral = fungible_asset::balance(collateral);
         if(remaining_collateral > 0) {
             let offer_signer = &object::generate_signer_for_extending(&extend_ref);
-            let asset = fungible_asset::withdraw(offer_signer, collateral, remaining_collateral);
+            let asset = fa_helper::withdraw(offer_signer, collateral, remaining_collateral);
             let config = borrow_global<Config>(get_config_addr());
             // extract and deposit fee to fee wallet upon cancellation
             let fee_amount = math64::mul_div(remaining_collateral, config.fee_cancel, BASIS_POINT_MAX);
-            primary_fungible_store::deposit(config.fee_wallet, fungible_asset::extract(&mut asset, fee_amount));
-            primary_fungible_store::deposit(signer::address_of(sender), asset);
+            let metadata = fungible_asset::store_metadata(collateral);
+            let fee_store = primary_fungible_store::ensure_primary_store_exists(config.fee_wallet, metadata);
+            fa_helper::deposit(fee_store, fungible_asset::extract(&mut asset, fee_amount));
+            let sender_store = primary_fungible_store::ensure_primary_store_exists(
+                signer::address_of(sender),
+                metadata
+            );
+            fa_helper::deposit(sender_store, asset);
         };
         object::delete(delete_ref);
         event::emit(OfferCancelled {
@@ -498,11 +509,16 @@ module legends_trade::premarket {
         };
         // amount is in bps
         let collateral_amount = (offer.price * amount) / BASIS_POINT_MAX;
-        let asset = primary_fungible_store::withdraw(sender, collateral_asset, collateral_amount);
+        let metadata = fungible_asset::store_metadata(offer.collateral);
+        let sender_store = primary_fungible_store::ensure_primary_store_exists(
+            signer::address_of(sender),
+            metadata
+        );
+        let asset = fa_helper::withdraw(sender, sender_store, collateral_amount);
         // withdraw the same amount from offer and merge for order collateral
         let offer_signer = &object::generate_signer_for_extending(&offer.extend_ref);
-        fungible_asset::merge(&mut asset, fungible_asset::withdraw(offer_signer, offer.collateral, collateral_amount));
-        fungible_asset::deposit(order.collateral, asset);
+        fungible_asset::merge(&mut asset, fa_helper::withdraw(offer_signer, offer.collateral, collateral_amount));
+        fa_helper::deposit(order.collateral, asset);
         offer.filled_amount += amount;
         event::emit(OrderCreated {
             token_addr,
@@ -549,21 +565,32 @@ module legends_trade::premarket {
         let metadata = token.fa.destroy_some();
         let decimals = fungible_asset::decimals(metadata);
         let amount_to_transfer =(((amount as u128) * math128::pow(10, (decimals as u128))) / (BASIS_POINT_MAX as u128) as u64);
-        let asset = primary_fungible_store::withdraw(sender, metadata, amount_to_transfer);
-        primary_fungible_store::deposit(buyer, asset);
+        let seller_store = primary_fungible_store::ensure_primary_store_exists(
+            seller,
+            metadata
+        );
+        let asset = fa_helper::withdraw(sender, seller_store, amount_to_transfer);
+        let buyer_store = primary_fungible_store::ensure_primary_store_exists(
+            buyer,
+            metadata
+        );
+        fa_helper::deposit(buyer_store, asset);
         // transfer collateral to seller (deduct settle fee)
         let collateral_amount = fungible_asset::balance(collateral);
         let order_signer = &object::generate_signer_for_extending(&extend_ref);
-        let collateral_asset = fungible_asset::withdraw(order_signer, collateral, collateral_amount);
+        let collateral_asset = fa_helper::withdraw(order_signer, collateral, collateral_amount);
         let config = borrow_global<Config>(get_config_addr());
         let fee_amount = math64::mul_div(collateral_amount, config.fee_settle, BASIS_POINT_MAX);
         // deposit fee and collateral
-        primary_fungible_store::deposit(
-            config.fee_wallet, 
+        let collateral_metadata = fungible_asset::asset_metadata(&collateral_asset);
+        let fee_store = primary_fungible_store::ensure_primary_store_exists(config.fee_wallet, collateral_metadata);
+        fa_helper::deposit(
+            fee_store, 
             fungible_asset::extract(&mut collateral_asset, fee_amount)
         );
-        primary_fungible_store::deposit(
-            seller,
+        let seller_store = primary_fungible_store::ensure_primary_store_exists(seller, collateral_metadata);
+        fa_helper::deposit(
+            seller_store,
             collateral_asset
         );
         event::emit(OrderSettled {
@@ -599,16 +626,19 @@ module legends_trade::premarket {
         // transfer collateral to buyer (deduct settle fee)
         let collateral_amount = fungible_asset::balance(collateral);
         let order_signer = &object::generate_signer_for_extending(&extend_ref);
-        let collateral_asset = fungible_asset::withdraw(order_signer, collateral, collateral_amount);
+        let collateral_asset = fa_helper::withdraw(order_signer, collateral, collateral_amount);
         let config = borrow_global<Config>(get_config_addr());
         let fee_amount = math64::mul_div(collateral_amount, config.fee_settle, BASIS_POINT_MAX);
         // deposit fee and collateral
-        primary_fungible_store::deposit(
-            config.fee_wallet, 
+        let collateral_metadata = fungible_asset::asset_metadata(&collateral_asset);
+        let fee_store = primary_fungible_store::ensure_primary_store_exists(config.fee_wallet, collateral_metadata);
+        fa_helper::deposit(
+            fee_store, 
             fungible_asset::extract(&mut collateral_asset, fee_amount)
         );
-        primary_fungible_store::deposit(
-            buyer,
+        let buyer_store =  primary_fungible_store::ensure_primary_store_exists(buyer, collateral_metadata);
+        fa_helper::deposit(
+            buyer_store,
             collateral_asset
         );
         event::emit(OrderClaimed {
@@ -638,16 +668,19 @@ module legends_trade::premarket {
         // transfer collateral to buyer (deduct settle fee)
         let collateral_amount = fungible_asset::balance(collateral);
         let order_signer = &object::generate_signer_for_extending(&extend_ref);
-        let collateral_asset = fungible_asset::withdraw(order_signer, collateral, collateral_amount);
+        let collateral_asset = fa_helper::withdraw(order_signer, collateral, collateral_amount);
         // no fee deduction during token premarket cancellation
         // deposit half of the asset to buyer's wallet
-        primary_fungible_store::deposit(
-            buyer,
+        let collateral_metadata = fungible_asset::asset_metadata(&collateral_asset);
+        let buyer_store = primary_fungible_store::ensure_primary_store_exists(buyer, collateral_metadata);
+        fa_helper::deposit(
+            buyer_store,
             fungible_asset::extract(&mut collateral_asset, collateral_amount / 2)
         );
         // deposit remaining half of the collateral asset to seller's wallet
-        primary_fungible_store::deposit(
-            seller,
+        let seller_store = primary_fungible_store::ensure_primary_store_exists(seller, collateral_metadata);
+        fa_helper::deposit(
+            seller_store,
             collateral_asset
         );
         event::emit(OrderCancelled {

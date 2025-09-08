@@ -12,8 +12,8 @@ module legends_trade::chain_type {
     const ETHEREUM: u8 = 2;
 
     const APTOS_FA: address = @0x000000000000000000000000000000000000000000000000000000000000000a;
-    const USDC_FA: address = @0x69091fbab5f7d635ee7ac5098cf0c1efbe31d68fec0f2cd565e8d168daf52832;
-    const USDT_FA: address = @0xa90ebedc1b089258450f2ac76cdcbb6348785cd6aa9916063017f77501cb14b6;
+    const USDC_FA: address = @0x69091fbab5f7d635ee7ac5098cf0c1efbe31d68fec0f2cd565e8d168daf52832; // Testnet usdc address
+    const USDT_FA: address = @0x0; // add Testnet usdt address
 
     public fun assert_valid_chain_type(type: u8) {
         assert!(type == APTOS || type == SOLANA || type == ETHEREUM, ERR_INVALID_CHAIN_TYPE);
