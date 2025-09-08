@@ -5,6 +5,7 @@ import { cors } from 'hono/cors'
 
 import premarketRoutes from './routes/premarketRoutes.js'
 import dashRoutes from './routes/dashboardRoutes.js'
+import priceRoutes from './routes/priceRoutes.js'
 
 const app = new Hono()
 app.use("/*", cors({ origin: "http://localhost:3000" }))
@@ -15,6 +16,7 @@ app.get('/', (c) => {
 
 app.route("/premarket", premarketRoutes);
 app.route("/dashboard", dashRoutes);
+app.route("/price", priceRoutes);
 
 serve({
   fetch: app.fetch,

@@ -5,12 +5,14 @@ import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { Account, Ed25519PrivateKey, Network, PrivateKey, PrivateKeyVariants } from "@aptos-labs/ts-sdk"
 import { FEE_PAYER_ACCOUNT_PRIVATE_KEY, NETWORK } from '@/utils/env';
+import backendApi from '@/utils/backendApi';
 
 interface AppContextType {
     originWalletDetails?: OriginWalletDetails;
     sourceChain?: Chain;
     sponsorAccount: Account;
     provider: CrossChainProvider<any, any, any, any, any, any>;
+    tokenPrices?: Record<string,number>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -32,6 +34,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     const [originWalletDetails, setOriginWalletDetails] = useState<
         OriginWalletDetails | undefined
     >(undefined);
+    const [tokenPrices, setTokenPrices] = useState<Record<string,number>>();
     const [sourceChain, setSourceChain] = useState<Chain | undefined>(undefined);
     const feePayerPrivateKey = new Ed25519PrivateKey(
         PrivateKey.formatPrivateKey(FEE_PAYER_ACCOUNT_PRIVATE_KEY, PrivateKeyVariants.Ed25519)
@@ -80,8 +83,21 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     }, [wallet]);
 
     useEffect(() => {
-
-    }, [wallet])
+        async function getPrices() {
+            try {
+                // TODO: fix
+                const aptos = (await backendApi.getTokenPrice("APT")).data.data ?? 0;
+                const usdc = (await backendApi.getTokenPrice("USDC")).data.data ?? 0;
+                setTokenPrices({
+                    APT: Number(aptos),
+                    USDC: Number(usdc)
+                })
+            } catch (error) {
+                console.log(`Error getting prices: ${error}`)
+            } 
+        }
+        getPrices()
+    },[])
     const value: AppContextType = {
         originWalletDetails,
         sourceChain,

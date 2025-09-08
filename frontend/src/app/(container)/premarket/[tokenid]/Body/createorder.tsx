@@ -17,8 +17,8 @@ import aptosClient, { getTxnOnExplorer } from "@/lib/aptos"
 import { toast } from "sonner"
 import { WalletButton } from "@/components/WalletButton"
 import { useApp } from "@/contexts/AppProvider"
-import { useUSDCBalance } from "@/contexts/USDCBalanceContext"
-import { testnetTokens } from "@/cross-chain-core"
+// import { useUSDCBalance } from "@/contexts/USDCBalanceContext"
+// import { testnetTokens } from "@/cross-chain-core-old"
 import { InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk"
 import { IoCheckmark } from "react-icons/io5"
 
@@ -35,7 +35,7 @@ interface CreateOrderProps {
 export default function CreateOrder({ type, token, amount, filled_amount, collateral, price, offer }: CreateOrderProps) {
     const { connected, account, signAndSubmitTransaction, wallet, signTransaction } = useWallet()
     const { sourceChain, originWalletDetails, provider, sponsorAccount } = useApp()
-    const { fetchAptosBalance, fetchOriginBalance, aptosBalance, originBalance, refetchBalancesWithDelay } = useUSDCBalance()
+    // const { fetchAptosBalance, fetchOriginBalance, aptosBalance, originBalance, refetchBalancesWithDelay } = useUSDCBalance()
     const { network } = useWallet()
     const { closeDrawer } = useDrawer();
     // const [desiredAmount, setDesiredAmount] = useState(0)
@@ -99,80 +99,80 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
 
 
 
-    const collateralToken = testnetTokens["Aptos"];
+    // const collateralToken = testnetTokens["Aptos"];
     const onCreateOrder = async () => {
-        try {
-            if (!account) throw new Error("Wallet not connected");
-            const amount = Number(desiredAmount) * 10000;
-            const transactionData: InputGenerateTransactionPayloadData = {
-                function: `${moduleAddress}::premarket::create_order_entry`,
-                functionArguments: [
-                    offer.offer_addr,
-                    amount
-                ]
-            };
-            const collateral = Number(offer.price) / 10000;
-            let hash = ""
-            if (sourceChain !== "Aptos") {
-                if (collateral > Number(aptosBalance)) {
-                    const desiredAmount = collateral - Number(aptosBalance);
-                    const quote = await provider?.getQuote({
-                        amount: desiredAmount.toString(),
-                        originChain: sourceChain,
-                        type: "transfer",
-                    });
-                    console.log(quote, desiredAmount)
-                    await provider.transfer({
-                        sourceChain,
-                        wallet,
-                        destinationAddress: account?.address?.toString() ?? "",
-                        mainSigner: sponsorAccount,
-                        amount: desiredAmount.toString(),
-                        sponsorAccount,
-                    })
-                };
+        // try {
+        //     if (!account) throw new Error("Wallet not connected");
+        //     const amount = Number(desiredAmount) * 10000;
+        //     const transactionData: InputGenerateTransactionPayloadData = {
+        //         function: `${moduleAddress}::premarket::create_order_entry`,
+        //         functionArguments: [
+        //             offer.offer_addr,
+        //             amount
+        //         ]
+        //     };
+        //     const collateral = Number(offer.price) / 10000;
+        //     let hash = ""
+        //     if (sourceChain !== "Aptos") {
+        //         if (collateral > Number(aptosBalance)) {
+        //             const desiredAmount = collateral - Number(aptosBalance);
+        //             const quote = await provider?.getQuote({
+        //                 amount: desiredAmount.toString(),
+        //                 originChain: sourceChain,
+        //                 type: "transfer",
+        //             });
+        //             console.log(quote, desiredAmount)
+        //             await provider.transfer({
+        //                 sourceChain,
+        //                 wallet,
+        //                 destinationAddress: account?.address?.toString() ?? "",
+        //                 mainSigner: sponsorAccount,
+        //                 amount: desiredAmount.toString(),
+        //                 sponsorAccount,
+        //             })
+        //         };
 
-                const rawTransaction = await aptosClient.transaction.build.simple({
-                    data: transactionData,
-                    options: {
-                        maxGasAmount: 2000,
-                    },
-                    sender: account.address,
-                    withFeePayer: true,
-                });
+        //         const rawTransaction = await aptosClient.transaction.build.simple({
+        //             data: transactionData,
+        //             options: {
+        //                 maxGasAmount: 2000,
+        //             },
+        //             sender: account.address,
+        //             withFeePayer: true,
+        //         });
 
-                const response = await signTransaction({
-                    transactionOrPayload: rawTransaction,
-                });
+        //         const response = await signTransaction({
+        //             transactionOrPayload: rawTransaction,
+        //         });
 
-                const sponsorAuthenticator = aptosClient.transaction.signAsFeePayer({
-                    signer: sponsorAccount,
-                    transaction: rawTransaction,
-                });
+        //         const sponsorAuthenticator = aptosClient.transaction.signAsFeePayer({
+        //             signer: sponsorAccount,
+        //             transaction: rawTransaction,
+        //         });
 
-                const txnSubmitted = await aptosClient.transaction.submit.simple(
-                    {
-                        transaction: rawTransaction,
-                        senderAuthenticator: response.authenticator,
-                        feePayerAuthenticator: sponsorAuthenticator,
-                    }
-                );
+        //         const txnSubmitted = await aptosClient.transaction.submit.simple(
+        //             {
+        //                 transaction: rawTransaction,
+        //                 senderAuthenticator: response.authenticator,
+        //                 feePayerAuthenticator: sponsorAuthenticator,
+        //             }
+        //         );
 
-                hash = txnSubmitted.hash;
-            } else {
-                const response = await signAndSubmitTransaction({ data: transactionData });
-                hash = response.hash;
-            }
-            await aptosClient.waitForTransaction({ transactionHash: hash });
-            toast.success(`Transaction completed`, {
-                action: <a target="_blank" href={getTxnOnExplorer(hash)} style={{ color: "green", textDecoration: "underline" }}>View Txn</a>,
-                icon: <IoCheckmark />
-            });
+        //         hash = txnSubmitted.hash;
+        //     } else {
+        //         const response = await signAndSubmitTransaction({ data: transactionData });
+        //         hash = response.hash;
+        //     }
+        //     await aptosClient.waitForTransaction({ transactionHash: hash });
+        //     toast.success(`Transaction completed`, {
+        //         action: <a target="_blank" href={getTxnOnExplorer(hash)} style={{ color: "green", textDecoration: "underline" }}>View Txn</a>,
+        //         icon: <IoCheckmark />
+        //     });
 
-            refetchBalancesWithDelay(300);
-        } catch (error) {
-            toast.error(`Failed to create Order: ${error}`)
-        }
+        //     refetchBalancesWithDelay(300);
+        // } catch (error) {
+        //     toast.error(`Failed to create Order: ${error}`)
+        // }
 
 
         // try {
@@ -202,24 +202,24 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
         }
     }, [offer.is_full_match, amount, price])
 
-    const [combinedUsdcBalance, setCombinedUsdcBalance] = useState<string>("");
-    useEffect(() => {
-        if (!sourceChain) return;
-        if (account) {
-            fetchAptosBalance(account.address.toString());
-        }
-        if (originWalletDetails) {
-            fetchOriginBalance(originWalletDetails.address.toString(), sourceChain);
-        }
-    }, [originWalletDetails, network, sourceChain, fetchOriginBalance, fetchAptosBalance]);
+    // const [combinedUsdcBalance, setCombinedUsdcBalance] = useState<string>("");
+    // useEffect(() => {
+    //     if (!sourceChain) return;
+    //     if (account) {
+    //         fetchAptosBalance(account.address.toString());
+    //     }
+    //     if (originWalletDetails) {
+    //         fetchOriginBalance(originWalletDetails.address.toString(), sourceChain);
+    //     }
+    // }, [originWalletDetails, network, sourceChain, fetchOriginBalance, fetchAptosBalance]);
 
-    useEffect(() => {
-        let combinedBalance = aptosBalance ? Number(aptosBalance) : 0;
-        combinedBalance += originBalance ? Number(originBalance) : 0;
-        setCombinedUsdcBalance(
-            combinedBalance.toString()
-        )
-    }, [aptosBalance, originBalance])
+    // useEffect(() => {
+    //     let combinedBalance = aptosBalance ? Number(aptosBalance) : 0;
+    //     combinedBalance += originBalance ? Number(originBalance) : 0;
+    //     setCombinedUsdcBalance(
+    //         combinedBalance.toString()
+    //     )
+    // }, [aptosBalance, originBalance])
 
     return (
         <>
@@ -273,7 +273,7 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
             <div className="bg-card-bg p-4 rounded-md">
                 <div className="flex justify-between items-center">
                     <PSmall className="text-secondary-text-color">Collateral</PSmall>
-                    <PSmall className="text-secondary-text-color">Bal. {combinedUsdcBalance}</PSmall>
+                    <PSmall className="text-secondary-text-color">Bal. {"combinedUsdcBalance"}</PSmall>
                 </div>
 
                 <div className="flex items-center justify-between mt-4">
@@ -293,7 +293,7 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
                             height={24}
                             className="rounded-full"
                         />
-                        <PSmall className="font-medium">{collateralToken.symbol}</PSmall>
+                        <PSmall className="font-medium">{"collateralToken.symbol"}</PSmall>
                         {/* <PSmall className="font-medium">{offer.collateral_asset}</PSmall> */}
                     </div>
                 </div>

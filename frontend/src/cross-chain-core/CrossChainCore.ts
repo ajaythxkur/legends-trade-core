@@ -12,18 +12,25 @@ import {
 
 import {
   ChainsConfig,
-  testnetChains,
-  testnetTokens,
   mainnetChains,
   mainnetTokens,
+  testnetChains,
+  testnetTokens,
   TokenConfig,
   ChainConfig,
 } from "./config";
+
 import {
   getAptosWalletUSDCBalance,
   getEthereumWalletUSDCBalance,
   getSolanaWalletUSDCBalance,
 } from "./utils/getUsdcBalance";
+
+import {
+  getAptosWalletBalance,
+  getEthereumWalletBalance,
+  getSolanaWalletBalance
+} from "./utils/getBalance"
 
 export interface CrossChainDappConfig {
   aptosNetwork: Network;
@@ -95,7 +102,7 @@ export class CrossChainCore {
   };
 
   readonly CHAINS: ChainsConfig = testnetChains;
-  readonly TOKENS: Record<string, TokenConfig> = testnetTokens;
+  readonly TOKENS: Record<string, TokenConfig[]> = testnetTokens;
 
   constructor(args: { dappConfig: CrossChainDappConfig }) {
     this._dappConfig = args.dappConfig;
@@ -160,6 +167,51 @@ export class CrossChainCore {
           sourceChain,
           // TODO: maybe let the user config it
           this.CHAINS[sourceChain].defaultRpc
+        );
+      default:
+        throw new Error(`Unsupported chain: ${sourceChain}`);
+    }
+  }
+
+  async getWalletBalance(
+    walletAddress: string,
+    sourceChain: Chain,
+    tokenAddress: string,
+    decimals: number
+  ): Promise<string> {
+    if (sourceChain === "Aptos") {
+      return await getAptosWalletBalance(
+        walletAddress,
+        this._dappConfig.aptosNetwork,
+        tokenAddress,
+        decimals
+      );
+    }
+    if (!this.CHAINS[sourceChain]) {
+      throw new Error(`Unsupported chain: ${sourceChain}`);
+    }
+    switch (sourceChain) {
+      case "Solana":
+        return await getSolanaWalletBalance(
+          walletAddress,
+          this._dappConfig?.solanaConfig?.rpc ??
+            this.CHAINS[sourceChain].defaultRpc,
+            tokenAddress
+        );
+      case "Ethereum":
+      case "BaseSepolia":
+      case "Sepolia":
+      case "Avalanche":
+      case "ArbitrumSepolia":
+      case "Arbitrum":
+      case "Base":
+      case "PolygonSepolia":
+      case "Polygon":
+        return await getEthereumWalletBalance(
+          walletAddress,
+          this.CHAINS[sourceChain].defaultRpc,
+          tokenAddress,
+          decimals
         );
       default:
         throw new Error(`Unsupported chain: ${sourceChain}`);

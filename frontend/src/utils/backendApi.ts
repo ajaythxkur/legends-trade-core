@@ -69,6 +69,12 @@ async function getUserOffersData(
     return (await api.get(`${backendUrl}/dashboard/offers/${tokenAddr}?account_addr=${accountAddr}&offer_status=${offer_status}&offer_type=${offer_type}&offset=${offset}&limit=${limit}`))
 }
 
+async function getTokenPrice(
+    symbol: string 
+) {
+    return (await api.get(`${backendUrl}/price/get/${symbol}`))
+}
+
 const backendApi = {
     getPremarketTokens,
     getTokenInfo,
@@ -76,6 +82,7 @@ const backendApi = {
     getUserData,
     getUserPremarketTokens,
     getUserOffers,
-    getUserOffersData
+    getUserOffersData,
+    getTokenPrice
 }
 export default backendApi;

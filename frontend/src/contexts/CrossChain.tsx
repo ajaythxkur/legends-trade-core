@@ -1,7 +1,7 @@
 "use client"
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { Network } from "@aptos-labs/ts-sdk";
-import { Chain, CrossChainCore } from "@/cross-chain-core";
+import { Chain, CrossChainCore } from "@/cross-chain-core-old";
 type CrossChainContextType = {
     aptosBalance: string | undefined;
     originBalance: string | undefined;

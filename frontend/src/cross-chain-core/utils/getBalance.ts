@@ -1,20 +1,14 @@
+// Functions will be called to fetch the balances of any tokens accross the chains
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { mainnetTokens, testnetTokens } from "../config";
 import { ethers, JsonRpcProvider } from "ethers";
-import { Chain } from "../CrossChainCore";
 
-export const getSolanaWalletUSDCBalance = async (
+export const getSolanaWalletBalance = async (
   walletAddress: string,
-  aptosNetwork: Network,
-  rpc: string
+  rpc: string,
+  tokenAddress: string
 ): Promise<string> => {
   const address = new PublicKey(walletAddress);
-  const tokenAddress =
-    aptosNetwork === Network.MAINNET
-      ? mainnetTokens["Solana"][0].tokenId.address
-      : testnetTokens["Solana"][0].tokenId.address;
-
   const connection = new Connection(rpc);
   // Check to see if we were passed wallet address or token account
   const splToken = await connection.getTokenAccountsByOwner(address, {
@@ -33,34 +27,25 @@ export const getSolanaWalletUSDCBalance = async (
   );
 };
 
-export const getEthereumWalletUSDCBalance = async (
+export const getEthereumWalletBalance = async (
   walletAddress: string,
-  aptosNetwork: Network,
-  chain: Chain,
-  rpc: string
+  rpc: string,
+  tokenAddress: string,
+  decimals: number,
 ): Promise<string> => {
-  const token =
-    aptosNetwork === Network.MAINNET
-      ? mainnetTokens[chain][0]
-      : testnetTokens[chain][0];
-
-  const tokenAddress = token.tokenId.address;
   const connection = new JsonRpcProvider(rpc);
   const abi = ["function balanceOf(address owner) view returns (uint256)"];
   const contract = new ethers.Contract(tokenAddress, abi, connection);
   const balance = await contract.balanceOf(walletAddress);
-  return ethers.formatUnits(balance, token.decimals).toString();
+  return ethers.formatUnits(balance, decimals).toString();
 };
 
-export const getAptosWalletUSDCBalance = async (
+export const getAptosWalletBalance = async (
   walletAddress: string,
-  aptosNetwork: Network
+  aptosNetwork: Network,
+  tokenAddress: string,
+  decimals: number,
 ): Promise<string> => {
-  const token =
-    aptosNetwork === Network.MAINNET
-      ? mainnetTokens["Aptos"][0]
-      : testnetTokens["Aptos"][0];
-  const tokenAddress = token.tokenId.address;
   const aptosConfig = new AptosConfig({ network: aptosNetwork });
   const connection = new Aptos(aptosConfig);
   const response = await connection.getCurrentFungibleAssetBalances({
@@ -76,7 +61,7 @@ export const getAptosWalletUSDCBalance = async (
   }
   const balance = (
     Number(response[0].amount) /
-    10 ** token.decimals
+    10 ** decimals
   ).toString();
   return balance;
 };

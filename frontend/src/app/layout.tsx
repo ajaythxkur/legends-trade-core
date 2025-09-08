@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AutoConnectProvider } from "@/components/AutoConnectProvider";
 import NextTopLoader from 'nextjs-toploader';
 import { AppProvider } from "@/contexts/AppProvider";
-import { USDCBalanceProvider } from "@/contexts/USDCBalanceContext";
+import { BalanceProvider } from "@/contexts/BalanceContext";
 import { NETWORK } from "@/utils/env";
 import WalletContextProvider from "@/contexts/WalletProvider";
 
@@ -29,9 +29,8 @@ export default function RootLayout({
         <ThemeProvider>
           <AutoConnectProvider>
             <WalletProvider>
-              <USDCBalanceProvider dappNetwork={NETWORK}>
+              <BalanceProvider dappNetwork={NETWORK}>
                 <WalletContextProvider>
-                {/* <CrossChainProvider dappNetwork={dappNetwork}> */}
                   <AppProvider>
                     <DrawerProvider>
                       <NextTopLoader color="#9FE878" showSpinner={false} />
@@ -39,8 +38,7 @@ export default function RootLayout({
                     </DrawerProvider>
                   </AppProvider>
                   </WalletContextProvider>
-                {/* </CrossChainProvider> */}
-              </USDCBalanceProvider>
+              </BalanceProvider>
             </WalletProvider>
           </AutoConnectProvider>
         </ThemeProvider>

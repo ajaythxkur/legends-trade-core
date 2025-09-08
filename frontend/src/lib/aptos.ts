@@ -1,4 +1,5 @@
 
+import { mainnetTokens, testnetTokens } from "@/cross-chain-core/config";
 import { NETWORK } from "@/utils/env";
 import { Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 
@@ -12,4 +13,10 @@ const aptosClient = new Aptos(
     })
 );
 
+const appTokens = NETWORK === "mainnet" ? mainnetTokens : testnetTokens;
+
 export default aptosClient;
+
+export{
+    appTokens
+}

@@ -1,5 +1,5 @@
 "use client"
-import { ChangeEvent, Dispatch, SetStateAction, useCallback, useEffect, useState } from "react"
+import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "react"
 import { AlertTriangle, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -8,43 +8,42 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@radix-u
 import Image from "next/image"
 import { PremarketSvg } from "@/components/icons/icons"
 import { Badge } from "@/components/ui/badge"
-import { useWallet, InputTransactionData, } from "@aptos-labs/wallet-adapter-react";
+import { useWallet, } from "@aptos-labs/wallet-adapter-react";
 import { toast } from "sonner"
 import aptosClient, { getTxnOnExplorer } from "@/lib/aptos"
 import { Token } from "@/types/premarket"
 import { moduleAddress } from "@/utils/env"
 import { WalletSelector } from "@/components/connectwallet"
-import { collateral_assets, collateralProps } from "@/utils/constants"
-import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { IoCheckmark } from "react-icons/io5"
-import { testnetTokens } from "@/cross-chain-core"
-import { useUSDCBalance } from "@/contexts/USDCBalanceContext"
 import { useApp } from "@/contexts/AppProvider"
 import { InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk"
+import { TokenConfig } from "@/cross-chain-core"
+import { useBalance } from "@/contexts/BalanceContext"
 interface CreateOfferModalProps {
     token: Token
     tokenAddr: string;
     open: boolean;
     setOpen: Dispatch<SetStateAction<boolean>>;
     balance: string;
+    collateralTokens: TokenConfig[];
+    collateralToken: TokenConfig;
+    onCollateralChange: (t: TokenConfig) => void;
+    priceInUsd: number;
 }
-export default function CreateOfferModal({ open, setOpen, token, tokenAddr, balance }: CreateOfferModalProps) {
-    const collateralToken = testnetTokens["Aptos"];
+export default function CreateOfferModal({ open, setOpen, token, tokenAddr, balance, collateralTokens, collateralToken, onCollateralChange, priceInUsd }: CreateOfferModalProps) {
     const { sourceChain, sponsorAccount, provider } = useApp()
-    const { aptosBalance, refetchBalancesWithDelay } = useUSDCBalance()
+    const { aptosBalance, refetchBalancesWithDelay } = useBalance()
     const { account, signAndSubmitTransaction, wallet, signTransaction } = useWallet();
     const [isBuy, setIsBuy] = useState(true);
     const [tokenprice, setTokenPrice] = useState<string>('');
     const [desiredAmount, setDesiredAmount] = useState('')
     const [collateralAmount, setCollateralAmount] = useState(0);
     const [acturalPrice, setActuralPrice] = useState(0);
-    const [selectedCollateral, setSelectedCollateral] = useState<collateralProps>(collateral_assets[0])
     const [orderType, setOrderType] = useState<string>("full");
     const isFullMatch = orderType === "full"; // boolean
     const [currentStep, setCurrentStep] = useState(1);
     const [isError, setIsError] = useState(false)
-
-    const priceInUsd = selectedCollateral.usdPrice; // in USD
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
         const { key } = e;
@@ -68,7 +67,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
         }
         const token_price = parseFloat(value);
         setTokenPrice(value);
-
+        console.log(token_price, priceInUsd)
         const priceInApt = token_price / priceInUsd;
         setActuralPrice(priceInApt);
 
@@ -183,6 +182,8 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
         setCurrentStep(2);
     }
 
+ 
+
     return (
         <div className="bg-bottom-layer-2 rounded-2xl w-full py-4 px-5 mt-0 ">
             <div className="flex items-center justify-between">
@@ -269,19 +270,19 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                         <H6>{collateralAmount}</H6>
                         <DropdownMenu>
                             <DropdownMenuTrigger className="py-2 px-3 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer gap-2">
-                                <Image src={`/media/usdc.png`} alt={collateralToken.symbol} height={20} width={20} className="rounded-full" />
+                                <Image src={collateralToken.icon} alt={collateralToken.symbol} height={20} width={20} className="rounded-full" />
                                 {collateralToken.symbol}
                                 {/* <IoIosArrowDown className='ms-2' /> */}
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="bg-secondary-button-color w-40 rounded-md">
                                 <DropdownMenuSeparator />
-                                {/* {
-                                    collateral_assets.map((coll, i) => {
+                                {
+                                    collateralTokens.map((coll, i) => {
                                         return (
                                             <DropdownMenuItem
                                                 key={i}
                                                 onClick={() => {
-                                                    setSelectedCollateral(coll)
+                                                    onCollateralChange(coll)
                                                 }}
                                                 className={`capitalize flex items-center gap-2`}
                                             >
@@ -290,7 +291,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                                             </DropdownMenuItem>
                                         )
                                     })
-                                } */}
+                                }
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
