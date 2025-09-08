@@ -16,6 +16,7 @@ import { moduleAddress } from "@/utils/env"
 import aptosClient from "@/lib/aptos"
 import { toast } from "sonner"
 import { WalletSelector } from "@/components/connectwallet"
+import { WalletButton } from "@/components/WalletButton"
 
 interface CreateOrderProps {
     type: string;
@@ -242,7 +243,7 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
                             disabled={!collateralAmount || !desiredAmount}
                         >Confirm {type === 'buy' ? 'Buy' : 'Sell'} Order</Button>
                         :
-                        <WalletSelector />
+                        <WalletButton />
                 }
             </div>
 

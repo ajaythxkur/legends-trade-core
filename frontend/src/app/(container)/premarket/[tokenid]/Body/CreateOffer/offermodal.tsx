@@ -362,7 +362,6 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
             <div className="flex justify-between">
                 {/* Step 1 Buttons */}
                 {currentStep === 1 && (
-                    // <Button onClick={() => setCurrentStep(2)} className="w-full mt-4" disabled={!collateralAmount || !tokenprice || !desiredAmount}>Next</Button>
                     <Button onClick={() => handleNextClick()} className="w-full mt-4" disabled={!collateralAmount || !tokenprice || !desiredAmount}>Next</Button>
                 )}
 

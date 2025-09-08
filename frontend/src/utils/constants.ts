@@ -1,3 +1,40 @@
+
+import { Presentation, Rocket, Coins, Gem } from "lucide-react"
+import { RxDashboard } from "react-icons/rx";
+export const menuitems = [
+    {
+        name: "Pre Market",
+        url: "/premarket",
+        icon: Presentation,
+        disabled: false
+    },
+    {
+        name: "Launch Pad",
+        url: "/launchpad",
+        icon: Rocket,
+        disabled: true
+    },
+    {
+        name: "Points",
+        url: "/points",
+        icon: Coins,
+        disabled: true
+    },
+    {
+        name: "Dashboard",
+        url: "/dashboard",
+        icon: RxDashboard,
+        disabled: false
+
+    },
+    {
+        name: "Rewards",
+        url: "/rewards",
+        icon: Gem,
+        disabled: true
+    }
+];
+
 export const rewardPoints = [
     {
         title: "Refer a Friend",
@@ -52,15 +89,15 @@ export const manageOrder = [
     }
 ];
 
-export interface collateralProps{
-    name:string;
-    symbol:string;
-    icon:string;
-    address:string;
-    usdPrice:number;
-    decimals:number;
+export interface collateralProps {
+    name: string;
+    symbol: string;
+    icon: string;
+    address: string;
+    usdPrice: number;
+    decimals: number;
 }
-export const collateral_assets:collateralProps[] = [
+export const collateral_assets: collateralProps[] = [
     // {
     //     name: 'Aptos',
     //     symbol: 'APT',
@@ -82,7 +119,7 @@ export const collateral_assets:collateralProps[] = [
         symbol: 'USDC',
         icon: '/media/usdc.png',
         address: '0x000000000000000000000000000000000000000000000000000000000000000c',
-        usdPrice:1,
+        usdPrice: 1,
         decimals: 6
     }
 ]

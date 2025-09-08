@@ -114,7 +114,6 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
                                         <div className="flex justify-between items-center">
                                             <PSmall className="text-sm text-tertiary-text-color">Settle time start</PSmall>
                                             <PLarge className="text-sm text-secondary-text-color flex flex-col justify-end items-end">
-                                                {/* <span>{token.temp_starts_at ? token.temp_starts_at : ''}</span> */}
                                                 <span>{token.temp_starts_at ? dayjs.unix(Number(token.temp_starts_at)).format("YYYY-MM-DD") : '---- -- --'}</span>
                                                 <span className="text-xs">{token.temp_starts_at ? dayjs.unix(Number(token.temp_starts_at)).format("hh:mm A") : '-- : -- --'}</span>
                                             </PLarge>
