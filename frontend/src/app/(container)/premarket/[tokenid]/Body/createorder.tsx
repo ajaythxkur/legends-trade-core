@@ -13,10 +13,14 @@ import { Badge } from "@/components/ui/badge"
 import { Token, TokenOffers } from "@/types/premarket"
 import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-react"
 import { moduleAddress } from "@/utils/env"
-import aptosClient from "@/lib/aptos"
+import aptosClient, { getTxnOnExplorer } from "@/lib/aptos"
 import { toast } from "sonner"
-import { WalletSelector } from "@/components/connectwallet"
 import { WalletButton } from "@/components/WalletButton"
+import { useApp } from "@/contexts/AppProvider"
+import { useUSDCBalance } from "@/contexts/USDCBalanceContext"
+import { testnetTokens } from "@/cross-chain-core"
+import { InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk"
+import { IoCheckmark } from "react-icons/io5"
 
 interface CreateOrderProps {
     type: string;
@@ -29,7 +33,10 @@ interface CreateOrderProps {
 }
 
 export default function CreateOrder({ type, token, amount, filled_amount, collateral, price, offer }: CreateOrderProps) {
-    const { connected, account, signAndSubmitTransaction } = useWallet()
+    const { connected, account, signAndSubmitTransaction, wallet, signTransaction } = useWallet()
+    const { sourceChain, originWalletDetails, provider, sponsorAccount } = useApp()
+    const { fetchAptosBalance, fetchOriginBalance, aptosBalance, originBalance, refetchBalancesWithDelay } = useUSDCBalance()
+    const { network } = useWallet()
     const { closeDrawer } = useDrawer();
     // const [desiredAmount, setDesiredAmount] = useState(0)
     const [desiredAmount, setDesiredAmount] = useState('')
@@ -92,29 +99,93 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
 
 
 
-
+    const collateralToken = testnetTokens["Aptos"];
     const onCreateOrder = async () => {
-        if (!account) return;
-        const amount = Number(desiredAmount) * 10000
-        const transaction: InputTransactionData = {
-            data: {
+        try {
+            if (!account) throw new Error("Wallet not connected");
+            const amount = Number(desiredAmount) * 10000;
+            const transactionData: InputGenerateTransactionPayloadData = {
                 function: `${moduleAddress}::premarket::create_order_entry`,
                 functionArguments: [
                     offer.offer_addr,
                     amount
                 ]
+            };
+            const collateral = Number(offer.price) / 10000;
+            let hash = ""
+            if (sourceChain !== "Aptos") {
+                if (collateral > Number(aptosBalance)) {
+                    const desiredAmount = collateral - Number(aptosBalance);
+                    const quote = await provider?.getQuote({
+                        amount: desiredAmount.toString(),
+                        originChain: sourceChain,
+                        type: "transfer",
+                    });
+                    console.log(quote, desiredAmount)
+                    await provider.transfer({
+                        sourceChain,
+                        wallet,
+                        destinationAddress: account?.address?.toString() ?? "",
+                        mainSigner: sponsorAccount,
+                        amount: desiredAmount.toString(),
+                        sponsorAccount,
+                    })
+                };
+
+                const rawTransaction = await aptosClient.transaction.build.simple({
+                    data: transactionData,
+                    options: {
+                        maxGasAmount: 2000,
+                    },
+                    sender: account.address,
+                    withFeePayer: true,
+                });
+
+                const response = await signTransaction({
+                    transactionOrPayload: rawTransaction,
+                });
+
+                const sponsorAuthenticator = aptosClient.transaction.signAsFeePayer({
+                    signer: sponsorAccount,
+                    transaction: rawTransaction,
+                });
+
+                const txnSubmitted = await aptosClient.transaction.submit.simple(
+                    {
+                        transaction: rawTransaction,
+                        senderAuthenticator: response.authenticator,
+                        feePayerAuthenticator: sponsorAuthenticator,
+                    }
+                );
+
+                hash = txnSubmitted.hash;
+            } else {
+                const response = await signAndSubmitTransaction({ data: transactionData });
+                hash = response.hash;
             }
-        }
-        try {
-            // sign and submit transaction to chain
-            const response = await signAndSubmitTransaction(transaction);
-            // wait for transaction
-            await aptosClient.waitForTransaction({ transactionHash: response.hash });
-            toast.success('order created successfully')
+            await aptosClient.waitForTransaction({ transactionHash: hash });
+            toast.success(`Transaction completed`, {
+                action: <a target="_blank" href={getTxnOnExplorer(hash)} style={{ color: "green", textDecoration: "underline" }}>View Txn</a>,
+                icon: <IoCheckmark />
+            });
+
+            refetchBalancesWithDelay(300);
         } catch (error) {
-            console.log(error);
             toast.error(`Failed to create Order: ${error}`)
         }
+
+
+        // try {
+        //     // sign and submit transaction to chain
+        //     const response = await signAndSubmitTransaction(transaction);
+        //     // wait for transaction
+        //     await aptosClient.waitForTransaction({ transactionHash: response.hash });
+        //     toast.success('order created successfully')
+        // } catch (error) {
+        //     console.log(error);
+        //     toast.error(`Failed to create Order: ${error}`)
+        // }
+
     }
 
     useEffect(() => {
@@ -130,6 +201,25 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
             setSliderValue(0)
         }
     }, [offer.is_full_match, amount, price])
+
+    const [combinedUsdcBalance, setCombinedUsdcBalance] = useState<string>("");
+    useEffect(() => {
+        if (!sourceChain) return;
+        if (account) {
+            fetchAptosBalance(account.address.toString());
+        }
+        if (originWalletDetails) {
+            fetchOriginBalance(originWalletDetails.address.toString(), sourceChain);
+        }
+    }, [originWalletDetails, network, sourceChain, fetchOriginBalance, fetchAptosBalance]);
+
+    useEffect(() => {
+        let combinedBalance = aptosBalance ? Number(aptosBalance) : 0;
+        combinedBalance += originBalance ? Number(originBalance) : 0;
+        setCombinedUsdcBalance(
+            combinedBalance.toString()
+        )
+    }, [aptosBalance, originBalance])
 
     return (
         <>
@@ -183,7 +273,7 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
             <div className="bg-card-bg p-4 rounded-md">
                 <div className="flex justify-between items-center">
                     <PSmall className="text-secondary-text-color">Collateral</PSmall>
-                    <PSmall className="text-secondary-text-color">Bal. 0</PSmall>
+                    <PSmall className="text-secondary-text-color">Bal. {combinedUsdcBalance}</PSmall>
                 </div>
 
                 <div className="flex items-center justify-between mt-4">
@@ -197,13 +287,13 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
                     />
                     <div className="flex items-center flex-shrink-0 gap-2">
                         <Image
-                            src="/media/token-img.png"
+                            src="/media/usdc.png"
                             alt="token-image"
                             width={24}
                             height={24}
                             className="rounded-full"
                         />
-                        <PSmall className="font-medium">APT</PSmall>
+                        <PSmall className="font-medium">{collateralToken.symbol}</PSmall>
                         {/* <PSmall className="font-medium">{offer.collateral_asset}</PSmall> */}
                     </div>
                 </div>

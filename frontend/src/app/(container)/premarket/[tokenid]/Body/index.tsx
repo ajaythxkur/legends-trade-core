@@ -56,6 +56,8 @@ export default function Body({ tokenAddr }: BodyProps) {
         getOffers();
     }, [getOffers])
 
+    
+
     if (!tokenInfo) return <SpinnerLoading />
     return (
         <>

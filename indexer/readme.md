@@ -9,14 +9,14 @@ diesel migration generate <migration_name> --migration-dir src/db_migrations/mig
 ```sh
 diesel migration run \
   --config-file="src/db_migrations/diesel.toml" \
-  --database-url="postgresql://postgres:postgres@localhost:5432/legendstrade"
+  --database-url="postgresql://postgres:postgres@localhost:7377/legends_trade"
 ```
 
 # Revert last migration
 ```sh
 diesel migration revert \
   --config-file="src/db_migrations/diesel.toml" \
-  --database-url="postgresql://postgres:postgres@localhost:5432/legendstrade"
+  --database-url="postgresql://postgres:postgres@localhost:7377/legends_trade"
 ```
 
 # Run with cargo

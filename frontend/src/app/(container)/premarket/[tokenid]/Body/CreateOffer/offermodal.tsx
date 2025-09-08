@@ -17,7 +17,7 @@ import { WalletSelector } from "@/components/connectwallet"
 import { collateral_assets, collateralProps } from "@/utils/constants"
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { IoCheckmark } from "react-icons/io5"
-import { testnetTokens, WormholeQuoteResponse } from "@/cross-chain-core"
+import { testnetTokens } from "@/cross-chain-core"
 import { useUSDCBalance } from "@/contexts/USDCBalanceContext"
 import { useApp } from "@/contexts/AppProvider"
 import { InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk"
@@ -31,7 +31,7 @@ interface CreateOfferModalProps {
 export default function CreateOfferModal({ open, setOpen, token, tokenAddr, balance }: CreateOfferModalProps) {
     const collateralToken = testnetTokens["Aptos"];
     const { sourceChain, sponsorAccount, provider } = useApp()
-    const { aptosBalance, originBalance } = useUSDCBalance()
+    const { aptosBalance, refetchBalancesWithDelay } = useUSDCBalance()
     const { account, signAndSubmitTransaction, wallet, signTransaction } = useWallet();
     const [isBuy, setIsBuy] = useState(true);
     const [tokenprice, setTokenPrice] = useState<string>('');
@@ -110,7 +110,6 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                 ]
             }
             let hash = ""
-            console.log(collateralToken)
             if (sourceChain !== "Aptos") {
                 if (collateral > Number(aptosBalance)) {
                     const desiredAmount = collateral - Number(aptosBalance);
@@ -166,6 +165,8 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                 action: <a target="_blank" href={getTxnOnExplorer(hash)} style={{ color: "green", textDecoration: "underline" }}>View Txn</a>,
                 icon: <IoCheckmark />
             });
+
+            refetchBalancesWithDelay(300);
             setOpen(false)
         } catch (error: any) {
             console.log(error);
