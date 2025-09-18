@@ -1,116 +1,82 @@
 "use client";
 
 import {
-    APTOS_CONNECT_ACCOUNT_URL,
     AboutAptosConnect,
     AboutAptosConnectEducationScreen,
     AdapterNotDetectedWallet,
     AdapterWallet,
-    AptosPrivacyPolicy,
     WalletItem,
     WalletSortingOptions,
     groupAndSortWallets,
-    isAptosConnectWallet,
     isInstallRequired,
-    truncateAddress,
     useWallet,
 } from "@aptos-labs/wallet-adapter-react";
 import {
     ArrowLeft,
     ArrowRight,
     ChevronDown,
-    Copy,
-    LogOut,
-    User,
 } from "lucide-react";
-import { useCallback, useState } from "react";
-import { Button } from "./ui/button";
+import { Dispatch, SetStateAction } from "react";
+import { Button } from "../ui/button";
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
-} from "./ui/collapsible";
+} from "../ui/collapsible";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
-} from "./ui/dialog";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { toast } from 'sonner'
-import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
-import { TabsContent } from "./ui/tabs";
-import Link from "next/link";
-import { H4 } from "./ui/typography";
+} from "../ui/dialog";
+import { Drawer, DrawerContent, DrawerTitle, } from "@/components/ui/drawer"
 
-export function WalletSelector(walletSortingOptions: WalletSortingOptions) {
-    const { account, connected, disconnect, wallet, isLoading } = useWallet();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
+import { TabsContent } from "../ui/tabs";
+import { H3, H4 } from "../ui/typography";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-    const closeDialog = useCallback(() => setIsDialogOpen(false), []);
-
-    const copyAddress = useCallback(async () => {
-        if (!account?.address) return;
-        try {
-            await navigator.clipboard.writeText(account.address.toString());
-            toast.success('Copied wallet address to clipboard.');
-        } catch {
-            toast.error('Failed to copy wallet address.');
-        }
-    }, [account?.address, toast]);
-
-    return connected ? (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button>
-                    {account?.ansName ||
-                        truncateAddress(account?.address?.toString()) ||
-                        "Unknown"}
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-90">
-                <DropdownMenuItem onSelect={copyAddress} className="gap-2 flex items-center cursor-pointer">
-                    <Copy className="h-4 w-4" /> Copy address
-                </DropdownMenuItem>
-                {wallet && isAptosConnectWallet(wallet) && (
-                    <DropdownMenuItem asChild>
-                        <Link
-                            href={APTOS_CONNECT_ACCOUNT_URL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex gap-2"
-                        >
-                            <User className="h-4 w-4" /> Account
-                        </Link>
-                    </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onSelect={disconnect} className="gap-2 flex items-center cursor-pointer">
-                    <LogOut className="h-4 w-4" /> Disconnect
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    ) : (
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-                <Button disabled={isLoading}>
-                    {
-                        isLoading ? 'connecting...' : 'Connect Wallet'
-                    }
-                </Button>
-            </DialogTrigger>
-            <ConnectWalletDialog close={closeDialog} {...walletSortingOptions} />
-        </Dialog>
-    );
+interface WalletProps {
+    open: boolean;
+    setOpen: Dispatch<SetStateAction<boolean>>
+    walletSortingOptions?: WalletSortingOptions
 }
 
+export function WalletModal({ open, setOpen, walletSortingOptions }: WalletProps) {
+    const isMobile = useIsMobile();
+
+    if (isMobile) return <MobileDrawer open={open} setOpen={setOpen} walletSortingOptions={walletSortingOptions} />
+    return <DesktopModal open={open} setOpen={setOpen} walletSortingOptions={walletSortingOptions} />
+
+}
+
+const DesktopModal = ({ open, setOpen, walletSortingOptions }: WalletProps) => {
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent className="max-h-[80vh] overflow-y-auto bg-bottom-layer-2 scrollbar-hide">
+                <DialogTitle>{''}</DialogTitle>
+                <H4 className="text-center">Connect Wallet</H4>
+                <ConnectWalletDialog close={setOpen} {...walletSortingOptions} />
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+const MobileDrawer = ({ open, setOpen, walletSortingOptions }: WalletProps) => {
+    return (
+        <Drawer open={open} onOpenChange={setOpen}>
+            <DrawerContent className="max-h-[80vh] bg-bottom-layer-2 scrollbar-hide px-4 overflow-y-auto">
+                <DrawerTitle>{''}</DrawerTitle>
+                <H4 className="text-center">Connect Wallet</H4>
+                <ConnectWalletDialog close={setOpen} {...walletSortingOptions} />
+            </DrawerContent>
+        </Drawer>
+    )
+}
+
+
 interface ConnectWalletDialogProps extends WalletSortingOptions {
-    close: () => void;
+    close: Dispatch<SetStateAction<boolean>>;
 }
 
 function ConnectWalletDialog({
@@ -172,42 +138,17 @@ function ConnectWalletDialog({
     );
 
     return (
-        <DialogContent className="max-h-[80vh] overflow-auto bg-bottom-layer-2 scrollbar-hide">
+        <div className="">
             <AboutAptosConnect renderEducationScreen={renderEducationScreen}>
-                <DialogHeader>
-                    <DialogTitle>{''}</DialogTitle>
-                    <H4 className="text-center">
-                        {hasAptosConnectWallets ? (
-                            <span>Connect Wallet</span>
-                        ) : (
-                            "Connect Wallet"
-                        )}
-                    </H4>
-                </DialogHeader>
-
                 {hasAptosConnectWallets && (
                     <div className="flex flex-col gap-2 pt-3">
                         {aptosConnectWallets.map((wallet) => (
                             <AptosConnectWalletRow
                                 key={wallet.name}
                                 wallet={wallet}
-                                onConnect={close}
+                            // onConnect={close}
                             />
                         ))}
-                        {/* <p className="flex gap-1 justify-center items-center text-muted-foreground text-sm">
-                            Learn more about{" "}
-                            <AboutAptosConnect.Trigger className="flex gap-1 py-3 items-center text-foreground">
-                                Aptos Connect <ArrowRight size={16} />
-                            </AboutAptosConnect.Trigger>
-                        </p>
-                        <AptosPrivacyPolicy className="flex flex-col items-center py-1">
-                            <p className="text-xs leading-5">
-                                <AptosPrivacyPolicy.Disclaimer />{" "}
-                                <AptosPrivacyPolicy.Link className="text-muted-foreground underline underline-offset-4" />
-                                <span className="text-muted-foreground">.</span>
-                            </p>
-                            <AptosPrivacyPolicy.PoweredBy className="flex gap-1.5 items-center text-xs leading-5 text-muted-foreground" />
-                        </AptosPrivacyPolicy> */}
                         <div className="flex items-center gap-3 pt-4 text-muted-foreground">
                             <div className="h-px bg-border-color w-1/2" />
                             Or
@@ -229,7 +170,7 @@ function ConnectWalletDialog({
                                 <WalletRow
                                     key={wallet.name}
                                     wallet={wallet}
-                                    onConnect={close}
+                                // onConnect={close}
                                 />
                             ))}
                             {!!aptosInstallableWallets.length && (
@@ -244,7 +185,7 @@ function ConnectWalletDialog({
                                             <WalletRow
                                                 key={wallet.name}
                                                 wallet={wallet}
-                                                onConnect={close}
+                                            // onConnect={close}
                                             />
                                         ))}
                                     </CollapsibleContent>
@@ -257,7 +198,7 @@ function ConnectWalletDialog({
                                 <WalletRow
                                     key={wallet.name}
                                     wallet={wallet}
-                                    onConnect={close}
+                                // onConnect={close}
                                 />
                             ))}
                             {!!solanaInstallableWallets.length && (
@@ -272,7 +213,7 @@ function ConnectWalletDialog({
                                             <WalletRow
                                                 key={wallet.name}
                                                 wallet={wallet}
-                                                onConnect={close}
+                                            // onConnect={close}
                                             />
                                         ))}
                                     </CollapsibleContent>
@@ -285,7 +226,7 @@ function ConnectWalletDialog({
                                 <WalletRow
                                     key={wallet.name}
                                     wallet={wallet}
-                                    onConnect={close}
+                                // onConnect={close}
                                 />
                             ))}
                             {!!evmInstallableWallets.length && (
@@ -300,7 +241,7 @@ function ConnectWalletDialog({
                                             <WalletRow
                                                 key={wallet.name}
                                                 wallet={wallet}
-                                                onConnect={close}
+                                            // onConnect={close}
                                             />
                                         ))}
                                     </CollapsibleContent>
@@ -310,7 +251,7 @@ function ConnectWalletDialog({
                     </Tabs>
                 </div>
             </AboutAptosConnect>
-        </DialogContent>
+        </div>
     );
 }
 

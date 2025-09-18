@@ -37,7 +37,7 @@ export default function Sidebar() {
                     <div key={index}>
                         {
                             item.disabled ?
-                                <Button variant="ghost" className={`bg-transparent ${isMinimized ? 'justify-center px-3.75 py-2.5 md:py-3 md:px-4.5 ' : ''}`} disabled>
+                                <Button variant="ghost" className={`text-primary bg-transparent ${isMinimized ? 'justify-center px-3.75 py-2.5 md:py-3 md:px-4.5 ' : ''}`} disabled>
                                     {/* <div className="flex-shrink-0">{item.icon}</div> */}
                                     <item.icon size={18} />
                                     {isVisible ? '' :

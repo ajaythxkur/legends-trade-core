@@ -13,6 +13,7 @@ import SpinnerLoading from '@/components/SpinnerLoading';
 import { Badge } from '@/components/ui/badge';
 import { IoCloseOutline } from 'react-icons/io5';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { H1, H4 } from '@/components/ui/typography';
 
 interface BodyProps {
     tokenAddr: string;
@@ -25,7 +26,10 @@ export default function Body({ tokenAddr }: BodyProps) {
     const [offers, setOffers] = useState<TokenOffers[]>([]);
     const [tokenInfo, setTokenInfo] = useState<Token>();
     const [offset, setOffset] = useState(0);
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
+    const [totaloffers, setTotalOffers] = useState(0)
+    const [myoffers, setMyOffers] = useState(0)
+    const [totalOrders, setTotalOrders] = useState(0)
     const getTokenInfo = async () => {
         try {
             const response = await backendApi.getTokenInfo(tokenAddr)
@@ -40,7 +44,9 @@ export default function Body({ tokenAddr }: BodyProps) {
             setLoading(true)
             const response = await backendApi.getOffers(tokenAddr, String(account?.address), collateral, fillType, isBuy, offset, 10)
             setOffers(response.data.offers);
-            // console.log(response.data)
+            setTotalOffers(response.data.totalOffers)
+            setMyOffers(response.data.myOffers)
+            setTotalOrders(response.data.totalOrders)
         } catch (error) {
             console.log(error)
         } finally {
@@ -56,7 +62,7 @@ export default function Body({ tokenAddr }: BodyProps) {
         getOffers();
     }, [getOffers])
 
-    
+
 
     if (!tokenInfo) return <SpinnerLoading />
     return (
@@ -67,69 +73,84 @@ export default function Body({ tokenAddr }: BodyProps) {
             </div>
 
             {/* Trading Controls */}
-            <div className="mt-6 mb-0 lg:mb-8">
-                <div className="flex flex-wrap md:flex-nowrap justify-between mb-4 overflow-x-auto scrollbar-hidden">
-                    <Tabs defaultValue="buy" className="w-full">
-                        <div className="flex items-center md:items-start justify-between pb-4 lg:pb-6">
-                            <div className="flex flex-col justify-between h-full">
-                                <TabsList>
-                                    <TabsTrigger value="buy" onClick={() => setIsBuy(true)}>Buy</TabsTrigger>
-                                    <TabsTrigger value="sell" onClick={() => setIsBuy(false)}>Sell</TabsTrigger>
-                                </TabsList>
-                                <div className="hidden badges lg:flex gap-4 items-center mt-6">
-                                    {/* {collateral !== 'all' &&
-                                        <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setCollateral('all')}>
-                                            {collateral}
-                                            <IoCloseOutline className="w-5 h-5" /></Badge>
-                                    } */}
-                                    {fillType !== 'all' &&
-                                        <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setFillType('all')}>{fillType}<IoCloseOutline className="w-5 h-5" /></Badge>
-                                    }
-
-                                </div>
+            {
+                tokenInfo.status === 1 ?
+                    <>
+                        <H4 className='mt-8 text-center'>Settle Ended - Token Stats:</H4>
+                        <div className="grid grid-cols-3 gap-4 mt-4">
+                            <div className="space-y-4 p-4 rounded-2xl bg-bottom-layer-1 text-center shadow-md">
+                                <H4>Total Offers</H4>
+                                <H1>{totaloffers}</H1>
                             </div>
-                            {
-                                tokenInfo.status === 0 &&
-                                <div className="space-y-0 lg:space-y-4 flex lg:flex-col items-end gap-4 lg:gap-0 ">
-                                    {/* Create Offer Modal---------------- */}
-                                    <CreateOfferModal
-                                        token={tokenInfo}
-                                        tokenAddr={tokenAddr}
-                                    />
-
-                                    {/* Filters---------------- */}
-                                    <Filters
-                                        fillType={fillType}
-                                        setFillType={setFillType}
-                                        collateral={collateral}
-                                        setCollateral={setCollateral}
-                                    />
-                                </div>
-                            }
+                            <div className="space-y-4 p-4 rounded-2xl bg-bottom-layer-1 text-center shadow-md">
+                                <H4>Total Orders</H4>
+                                <H1>{totalOrders}</H1>
+                            </div>
+                            <div className="space-y-4 p-4 rounded-2xl bg-bottom-layer-1 text-center shadow-md">
+                                <H4>My Offers</H4>
+                                <H1>{myoffers}</H1>
+                            </div>
                         </div>
+                    </>
+                    :
+                    <div className="mt-6 mb-0 lg:mb-8">
+                        <div className="flex flex-wrap md:flex-nowrap justify-between mb-4 overflow-x-auto scrollbar-hidden">
+                            <Tabs defaultValue="buy" className="w-full">
+                                <div className="flex items-center md:items-start justify-between pb-4 lg:pb-6">
+                                    <div className="flex flex-col justify-between h-full">
+                                        <TabsList>
+                                            <TabsTrigger value="buy" onClick={() => setIsBuy(true)}>Buy</TabsTrigger>
+                                            <TabsTrigger value="sell" onClick={() => setIsBuy(false)}>Sell</TabsTrigger>
+                                        </TabsList>
+                                        <div className="hidden badges lg:flex gap-4 items-center mt-6">
+                                            {fillType !== 'all' &&
+                                                <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setFillType('all')}>{fillType}<IoCloseOutline className="w-5 h-5" /></Badge>
+                                            }
+                                        </div>
+                                    </div>
+                                    {
+                                        tokenInfo.status === 0 &&
+                                        <div className="space-y-0 lg:space-y-4 flex lg:flex-col items-end gap-4 lg:gap-0 ">
+                                            {/* Create Offer Modal---------------- */}
+                                            <CreateOfferModal
+                                                token={tokenInfo}
+                                                tokenAddr={tokenAddr}
+                                            />
 
-                        <TabsContent value="buy">
-                            <BuySellCard
-                                type="buy"
-                                offers={offers}
-                                tokenInfo={tokenInfo}
-                                fillType={fillType}
-                                loading={loading}
-                            />
-                        </TabsContent>
+                                            {/* Filters---------------- */}
+                                            <Filters
+                                                fillType={fillType}
+                                                setFillType={setFillType}
+                                                collateral={collateral}
+                                                setCollateral={setCollateral}
+                                            />
+                                        </div>
+                                    }
+                                </div>
 
-                        <TabsContent value="sell">
-                            <BuySellCard
-                                type="sell"
-                                offers={offers}
-                                tokenInfo={tokenInfo}
-                                fillType={fillType}
-                                loading={loading}
-                            />
-                        </TabsContent>
-                    </Tabs>
-                </div>
-            </div>
+                                <TabsContent value="buy">
+                                    <BuySellCard
+                                        type="buy"
+                                        offers={offers}
+                                        tokenInfo={tokenInfo}
+                                        fillType={fillType}
+                                        loading={loading}
+                                    />
+                                </TabsContent>
+
+                                <TabsContent value="sell">
+                                    <BuySellCard
+                                        type="sell"
+                                        offers={offers}
+                                        tokenInfo={tokenInfo}
+                                        fillType={fillType}
+                                        loading={loading}
+                                    />
+                                </TabsContent>
+                            </Tabs>
+                        </div>
+                    </div>
+            }
         </>
     );
 };

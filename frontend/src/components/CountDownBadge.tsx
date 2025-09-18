@@ -1,5 +1,5 @@
 'use client'
-import { useCountdown } from "@/app/(container)/dashboard/premarket/[id]/Body/Countdown";
+import { useCountdown } from "@/components/Countdown";
 import { Badge } from "./ui/badge";
 interface CountdownBadgeProps {
     settle_starts_at: BigInt | undefined;

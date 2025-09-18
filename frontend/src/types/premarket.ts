@@ -6,10 +6,10 @@ export interface Token {
     twitter?: String
     telegram?: String
     settle_duration: BigInt
-    temp_starts_at?: Date
-    temp_ends_at?: Date
-    // temp_starts_at?: BigInt
-    // temp_ends_at?: BigInt
+    // temp_starts_at?: Date
+    // temp_ends_at?: Date
+    temp_starts_at?: BigInt
+    temp_ends_at?: BigInt
     settle_started_at?: BigInt
     status: number
     fa?: String
@@ -24,6 +24,7 @@ export interface Token {
     volAll: number;
     vol24h: number;
     priceChange: number;
+    cross_chain_address: string;
 }
 
 export interface TokenOffers {
@@ -55,6 +56,7 @@ export interface TokenOrder {
     ts: BigInt
     is_settled: Boolean
     is_claimed: Boolean
+    is_cancelled: Boolean
 }
 
 export interface UserData {

@@ -52,42 +52,13 @@ export const rewardPoints = [
         score: 100
     }
 ]
+// Chain icons
+export const chainIcons: Record<number, string> = {
+    0: "/media/aptos.svg",
+    1: "/media/solana.jpg",
+    2: "/media/ethereum.jpg",
+};
 
-// Dummy data for offer management interface
-export const manageOrder = [
-    {
-        user: '16zW...s15cd5',
-        time: '6m',
-        filledTxn: '7kY...g23h',
-        collateral: 100,
-        status: 'Claimed',
-        action: 'view'
-    },
-    {
-        user: '16zW...s15cd5',
-        time: '6m',
-        filledTxn: '7kY...g23h',
-        collateral: 100,
-        status: 'Pending',
-        action: 'claim'
-    },
-    {
-        user: '16zW...s15cd5',
-        time: '6m',
-        filledTxn: '7kY...g23h',
-        collateral: 100,
-        status: 'Pending',
-        action: 'claim'
-    },
-    {
-        user: '16zW...s15cd5',
-        time: '6m',
-        filledTxn: '7kY...g23h',
-        collateral: 100,
-        status: 'Settled',
-        action: 'view'
-    }
-];
 
 export interface collateralProps {
     name: string;
@@ -98,14 +69,14 @@ export interface collateralProps {
     decimals: number;
 }
 export const collateral_assets: collateralProps[] = [
-    // {
-    //     name: 'Aptos',
-    //     symbol: 'APT',
-    //     icon: '/media/aptos.png',
-    //     address: '0x000000000000000000000000000000000000000000000000000000000000000a',
-    //     usdPrice:5,
-    //     decimals: 8,
-    // },
+    {
+        name: 'Aptos',
+        symbol: 'APT',
+        icon: '/media/aptos.png',
+        address: '0x000000000000000000000000000000000000000000000000000000000000000a',
+        usdPrice: 4.3,
+        decimals: 8,
+    },
     // {
     //     name: 'Teather USDT',
     //     symbol: 'USDT',
@@ -118,7 +89,7 @@ export const collateral_assets: collateralProps[] = [
         name: 'Teather USDC',
         symbol: 'USDC',
         icon: '/media/usdc.png',
-        address: '0x000000000000000000000000000000000000000000000000000000000000000c',
+        address: '0x69091fbab5f7d635ee7ac5098cf0c1efbe31d68fec0f2cd565e8d168daf52832',
         usdPrice: 1,
         decimals: 6
     }

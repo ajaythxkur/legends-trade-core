@@ -42,9 +42,10 @@ async function getUserData(accountAddr: string) {
 async function getUserPremarketTokens(
     accountAddr: string,
     limit: number,
-    offset: number
+    offset: number,
+    status: string,
 ) {
-    return (await api.get(`${backendUrl}/dashboard/premarket_tokens/${accountAddr}?limit=${limit}&offset=${offset}`))
+    return (await api.get(`${backendUrl}/dashboard/premarket_tokens/${accountAddr}?limit=${limit}&offset=${offset}&status=${status}`))
 }
 
 async function getUserOffers(
@@ -70,9 +71,13 @@ async function getUserOffersData(
 }
 
 async function getTokenPrice(
-    symbol: string 
+    symbol: string
 ) {
     return (await api.get(`${backendUrl}/price/get/${symbol}`))
+}
+
+async function getCrossChainTokens(chain:number){
+    return (await api.get(`${backendUrl}/premarket/cc_tokens?chain=${chain}`))
 }
 
 const backendApi = {
@@ -83,6 +88,7 @@ const backendApi = {
     getUserPremarketTokens,
     getUserOffers,
     getUserOffersData,
-    getTokenPrice
+    getTokenPrice,
+    getCrossChainTokens
 }
 export default backendApi;

@@ -25,16 +25,18 @@ export const testnetTokens: Record<string, TokenConfig[]> = {
             },
             icon: usdcIcon,
             decimals: 6,
-        }
+        },
     ],
     Aptos: [
-         {
+        {
             symbol: "APT",
             decimals: 8,
             tokenId: {
                 chain: "Aptos",
                 address:
                     APTOS_FA,
+                // '0x1::aptos_coin::AptosCoin'
+                
             },
             icon: aptIcon,
         },

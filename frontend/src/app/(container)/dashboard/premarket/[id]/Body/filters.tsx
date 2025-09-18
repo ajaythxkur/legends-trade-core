@@ -15,8 +15,8 @@ export default function Filters({ offerType, setOfferType, offerStatus, setOffer
         <div className='flex gap-4'>
             {/* Type Filter */}
             <DropdownMenu>
-                <DropdownMenuTrigger className="py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
-                    Type<IoIosArrowDown className='ms-2' />
+                <DropdownMenuTrigger className="py-2.5 md:py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
+                    Type <IoIosArrowDown className='ms-2' />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                     <DropdownMenuLabel>Type </DropdownMenuLabel>
@@ -39,7 +39,7 @@ export default function Filters({ offerType, setOfferType, offerStatus, setOffer
 
             {/* Status Filter */}
             <DropdownMenu>
-                <DropdownMenuTrigger className="py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
+                <DropdownMenuTrigger className="py-2.5 md:py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
                     Status<IoIosArrowDown className='ms-2' />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>

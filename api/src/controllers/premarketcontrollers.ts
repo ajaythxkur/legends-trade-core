@@ -157,7 +157,7 @@ export const getTokenInfo = async (c: Context) => {
                 lastPrice,
                 volAll: totalVolume,
                 vol24h: twentyFourHourVolume,
-                priceChange, 
+                priceChange,
             };
         });
 
@@ -172,12 +172,7 @@ export const getTokenInfo = async (c: Context) => {
 export const getOffers = async (c: Context) => {
     try {
         const { addr } = c.req.param();
-        let userAddr = c.req.query('userAddr') ?? ''
-        const filltype = c.req.query("filltype");
-        const collateral = c.req.query("collateral");
-        const is_buy = c.req.query("is_buy"); // "true" or "false"
-        const limit = Number(c.req.query("limit") ?? 10);
-        const offset = Number(c.req.query('offset') ?? 0)
+        const { userAddr, filltype, collateral, is_buy, limit, offset } = c.req.query();
         // const currenttoken = await prisma.premarketToken.findUnique({
         //     where: {
         //         token_addr: addr,
@@ -192,6 +187,9 @@ export const getOffers = async (c: Context) => {
             where: {
                 token_addr: addr,
                 is_active: true,
+                NOT: {
+                    filled_amount: { equals: prisma.premarketOffer.fields.amount }
+                },
 
                 ...(is_buy !== undefined ? { is_buy: is_buy === "false" } : {}),
                 AND: [
@@ -208,8 +206,8 @@ export const getOffers = async (c: Context) => {
                     //     : {}
                 ],
             },
-            take: limit,
-            skip: offset * limit,
+            take: Number(limit),
+            skip: Number(offset) * Number(limit),
         });
 
         const totalOffers = await prisma.premarketOffer.count({
@@ -229,7 +227,6 @@ export const getOffers = async (c: Context) => {
             where: { token_addr: addr }
         });
 
-        // return c.json(serialize(offers), 200);
         return c.json(serialize({
             offers: offers,
             totalOffers: totalOffers,
@@ -275,3 +272,43 @@ export const updateTokenData = async (c: Context) => {
         return c.json({ error: "failed to update token" }, 500);
     }
 };
+
+
+// Update Token CrossChain Address
+export const updateCrossChainAddress = async (c: Context) => {
+    try {
+        const { token_addr, chain_type, cc_address } = c.req.query()
+        const token = await prisma.premarketToken.update({
+            where: {
+                token_addr: token_addr,
+                chain_type: Number(chain_type),
+            },
+            data: {
+                chain_type: Number(chain_type),
+                cross_chain_address: cc_address
+            }
+        });
+        if (token) {
+            return c.json({ message: "Token data updated", updatedtoken: serialize(token) });
+        }
+        return c.json({ message: "Token not found" });
+    } catch (error) {
+        return c.json(`Failed to update: ${error}`)
+    }
+}
+
+//get tokens having cross chain address.
+export const getCrossChainTokens = async (c: Context) => {
+    try {
+        const { chain } = c.req.query()
+        const tokens = await prisma.premarketToken.findMany({
+            where: {
+                cross_chain_address: { not: null },
+                chain_type: Number(chain)
+            }
+        })
+        return c.json(serialize(tokens));
+    } catch (err) {
+        return c.json(`Failed to get tokens: ${err}`)
+    }
+}

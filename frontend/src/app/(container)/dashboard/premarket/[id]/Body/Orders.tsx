@@ -3,11 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PExtraSmall } from "@/components/ui/typography";
+import { useApp } from "@/contexts/AppProvider";
+import { testnetTokens } from "@/cross-chain-core";
 import aptosClient from "@/lib/aptos";
 import { TokenOffers, TokenOrder } from "@/types/premarket";
 import { moduleAddress } from "@/utils/env";
 import shortAddress from "@/utils/shortAddress";
-import { InputTransactionData, truncateAddress, useWallet } from "@aptos-labs/wallet-adapter-react";
+import { InputTransactionData, useWallet } from "@aptos-labs/wallet-adapter-react";
 import dayjs from "dayjs";
 import { LucideExternalLink } from "lucide-react";
 import Image from "next/image";
@@ -22,9 +24,11 @@ interface OrderProps {
 
 export default function Orders({ offer, orders, status, tokenStatus }: OrderProps) {
     const { account, signAndSubmitTransaction } = useWallet();
+    const { sourceChain, tokenPrices } = useApp();
     if (!account) return;
     // const isSettlementEnded = status === "Ended";
     const isSettlementEnded = status === "Ended";
+
 
     const handleSettleOrder = async (order_addr: string) => {
         try {
@@ -102,22 +106,30 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                 <TableBody>
                     {
                         orders.map((order, index) => {
+                            const collateralTokens = sourceChain ? testnetTokens[sourceChain] : testnetTokens["Aptos"]
+                            const collateralToken = collateralTokens.find(
+                                (coll) => coll.tokenId.address.toLowerCase() === offer.collateral_asset.toLowerCase()
+                            );
+                            if (!collateralToken) {
+                                console.warn(`No collateral found for ${offer.collateral_asset}`);
+                                return null;
+                            }
+                            if (!tokenPrices) {
+                                console.warn("Token prices not loaded yet");
+                                return null;
+                            }
+                            const collTokenPrice = tokenPrices[collateralToken.symbol] ?? 0;
+
                             const amount = Number(order.amount) / 10000;
-                            const price = (Number(offer.price) / Math.pow(10, 8)) * 5
-                            const collateral = (price * amount) / 5
+                            const price = (Number(offer.price) / Math.pow(10, Number(collateralToken?.decimals))) * collTokenPrice;
+                            const collateral = (price * amount) / collTokenPrice
+                            const formatcollateral = Math.round(collateral * 100) / 100;
 
                             // Determine order status and action logic
                             const isBuyer = String(account?.address) === order.buyer;
                             const isSeller = String(account?.address) === order.seller;
 
-                            // Claim button should be enabled for buyer only when:
-                            // 1. Settlement period has ended AND seller hasn't settled, OR
-                            // 2. Seller has settled (regardless of time)
-                            // const isOrderSettled = order.is_settled || false;
                             const isOrderSettled = order.is_settled || false;
-                            const shouldEnableClaimForBuyer = isBuyer && (
-                                (isSettlementEnded && !isOrderSettled) || isOrderSettled
-                            );
 
                             // If offer is settled, both buyer and seller should see "settled" status
                             // const orderStatus = isOrderSettled ? "settled" : (order.is_settled ? "claimed" : "pending");
@@ -135,50 +147,30 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                     <TableCell className="text-center ">{dayjs.unix(Number(order.ts)).fromNow()}</TableCell>
                                     <TableCell>
                                         <span className="flex gap-1 justify-center items-center">
-                                            <Image src="/media/aptos.svg" alt="coll-icon" height={16} width={16} />
-                                            <span>{collateral}</span>
+                                            <Image src={`${collateralToken.icon}`} alt="coll-icon" height={16} width={16} className="rounded-full" />
+                                            <span>{formatcollateral}</span>
                                         </span>
                                     </TableCell>
                                     <TableCell className="text-center ">
-                                        <Badge
-                                            variant={
-                                                isBuyer
-                                                    ? order.is_claimed
-                                                        ? "positive"
-                                                        : "warning"
-                                                    : isSeller
-                                                        ? order.is_settled
-                                                            ? "positive"
-                                                            : order.is_claimed
-                                                                ? "positive"
-                                                                : "warning"
-                                                        : "warning"
-                                            }
-                                        >
-                                            {/* {isBuyer ?
-                                                order.is_claimed
-                                                    ? "Claimed"
-                                                    : "Pending"
-                                                : isSeller
-                                                    ? order.is_settled
-                                                        ? "Settled"
-                                                        : order.is_claimed
-                                                            ? "Claimed"
-                                                            : "Pending"
-                                                    : "Pending"} */}
-                                            {
-                                                isBuyer &&
-                                                (order.is_settled ? "Settled" : (order.is_claimed ? "Claimed" : "Pending"))
-                                            }
-                                            
-                                            {
-                                                isSeller &&
-                                                (order.is_settled ? "Settled" : (order.is_claimed ? "Claimed" : "Pending"))
-                                            }
-                                        </Badge>
+                                        {
+                                            order.is_cancelled ?
+                                                <Badge variant="warning">Cancelled</Badge>
+                                                :
+                                                <Badge
+                                                    variant={
+                                                        (order.is_settled ? "positive" : (order.is_claimed ? "positive" : "warning"))
+                                                    }
+                                                >
+                                                    {
+                                                        (order.is_settled ? "Settled" : (order.is_claimed ? "Claimed" : "Pending"))
+                                                    }
+                                                </Badge>
+                                        }
+
                                     </TableCell>
                                     {
-                                        tokenStatus !== 1 && order.created_by === account?.address.toString() ?
+                                        // tokenStatus !== 1 && order.created_by === account?.address.toString() ?
+                                        tokenStatus === 3 ?
                                             <TableCell className="text-center">
                                                 <Button
                                                     className="px-4 py-1.75"
@@ -191,7 +183,7 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                             <TableCell className="text-center">
                                                 {orderStatus === "settled" || order.is_settled || order.is_claimed ? (
                                                     //if order is settled.
-                                                    <Link href="/#" target="_blank">
+                                                    <Link href='#' target="_blank">
                                                         <LucideExternalLink className="h-5 w-5 ms-auto" />
                                                     </Link>
                                                 ) : order.is_claimed ? (

@@ -26,6 +26,7 @@ model PremarketToken {
   createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt         DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   txn_version       BigInt
+  cross_chain_address String?        @db.VarChar(66)
   offers            PremarketOffer[]
   orders            PremarketOrder[]
 

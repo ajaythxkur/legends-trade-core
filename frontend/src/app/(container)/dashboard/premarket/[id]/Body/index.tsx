@@ -16,11 +16,15 @@ import backendApi from '@/utils/backendApi';
 import SpinnerLoading from '@/components/SpinnerLoading';
 import Empty from '@/components/Empty';
 import Offers from './Offers';
-import PaginationNew from '@/components/PaginationNew';
+import PaginationNew from '@/components/Pagination';
+import { chainIcons } from '@/utils/constants';
+import { useApp } from '@/contexts/AppProvider';
+import { testnetTokens } from '@/cross-chain-core';
 dayjs.extend(duration);
 
 export default function Body({ id }: { id: string }) {
     const { account, isLoading } = useWallet();
+    const { sourceChain, tokenPrices } = useApp();
 
     const [tokenInfo, setTokenInfo] = useState<Token>();
     const [offers, setoffers] = useState<TokenOffers[]>([])
@@ -43,7 +47,7 @@ export default function Body({ id }: { id: string }) {
         if (!account) return;
         setLoading(true)
         try {
-            const response = await backendApi.getUserOffersData(id, String(account.address), offerStatus, offerType, offset, 10)
+            const response = await backendApi.getUserOffersData(id, String(account.address), offerStatus, offerType, offset, 5)
             setoffers(response.data.offers)
             setTotal(response.data.total)
         }
@@ -65,8 +69,10 @@ export default function Body({ id }: { id: string }) {
     if (isLoading || !tokenInfo) return <SpinnerLoading />;
     if (!isLoading && !account) return <Empty title="Wallet not connected" />
 
-    const aptPrice = 5; //in used
+    const aptPrice = 4.3; //in used
     const lastprice = (tokenInfo.lastPrice / Math.pow(10, 8)) * aptPrice;
+    const formatLastPrice = Math.round(lastprice * 100) / 100;
+
     const vol24h = (tokenInfo.vol24h / Math.pow(10, 8)) * aptPrice;
     const totalVolume = (tokenInfo.volAll / Math.pow(10, 8)) * aptPrice;
 
@@ -74,45 +80,37 @@ export default function Body({ id }: { id: string }) {
         <>
             {/* Token Data */}
             <div className="border-b border-border-color pb-4">
-                <div className="flex gap-6 flex-wrap md:flex-nowrap items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="relative">
-                            <Image src={`${tokenInfo.image ? tokenInfo.image : '/media/token-img.png'}`} alt="token-image" width={50} height={50} className="rounded-full" />
-                            {
-                                tokenInfo.chain_type === 0 &&
-                                <Image src="/media/aptos.svg" alt="token-image" width={16} height={16} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
-                            }
-                            {
-                                tokenInfo.chain_type === 1 &&
-                                <Image src="/media/solana.jpg" alt="token-image" width={16} height={16} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
-                            }
-                            {
-                                tokenInfo.chain_type === 2 &&
-                                <Image src="/media/ethereum.jpg" alt="token-image" width={16} height={16} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
-                            }
-                        </div>
-                        <div>
-                            <H5 className="font-semibold text-primary-text-color">{tokenInfo.symbol}</H5>
-                            <PExtraSmall className="text-tertiary-text-color mt-2">{tokenInfo.name}</PExtraSmall>
+                <div className="flex gap-4 md:gap-6 flex-wrap lg:flex-nowrap items-center justify-between">
+                    <div className="grid-grid-cols-2">
+                        <div className="flex items-center gap-3">
+                            <div className="relative">
+                                <Image src={`${tokenInfo.image ? tokenInfo.image : '/media/token-img.png'}`} alt="token-image" width={50} height={50} className="rounded-full" />
+                                <Image src={chainIcons[tokenInfo.chain_type]} alt="token-image" width={42} height={42} className="h-4 w-4  rounded-full absolute bottom-0 right-0" />
+                            </div>
+                            <div>
+                                <H5 className="font-semibold text-primary-text-color">{tokenInfo.symbol}</H5>
+                                <PExtraSmall className="text-tertiary-text-color mt-2">{tokenInfo.name}</PExtraSmall>
+                            </div>
                         </div>
                     </div>
                     {/* Price */}
                     <div className="text-center">
                         <div className="flex items-center gap-2">
-                            <PMedium className="font-semibold me-2 text-primary-text-color">$ {lastprice}</PMedium>
+                            <PMedium className="font-semibold me-2 text-primary-text-color">$ {formatLastPrice}</PMedium>
                             {
                                 tokenInfo.priceChange > 0 ?
-                                    <Badge variant="positive">+ {tokenInfo.priceChange}%</Badge>
+                                    <Badge variant="positive">+ {tokenInfo.priceChange.toFixed(2)}%</Badge>
                                     :
-                                    <Badge variant="negative">{tokenInfo.priceChange}%</Badge>
+                                    <Badge variant="negative">{tokenInfo.priceChange.toFixed(2)}%</Badge>
                             }
                         </div>
                         <PExtraSmall className="text-tertiary-text-color mt-2">Last Price</PExtraSmall>
                     </div>
+
                     {/* 24h Volume */}
                     <div className="text-center pt-4 md:pt-0">
                         <div className="flex items-center gap-2">
-                            <PMedium className="font-medium text-secondary-text-color">$ {vol24h}</PMedium>
+                            <PMedium className="font-medium text-secondary-text-color">$ {vol24h.toFixed(4)}</PMedium>
                             {/* <Badge variant="negative">+ 3.2%</Badge> */}
                         </div>
                         <PExtraSmall className="text-tertiary-text-color mt-2">24h Volume</PExtraSmall>
@@ -121,7 +119,7 @@ export default function Body({ id }: { id: string }) {
                     {/* Total Volume */}
                     <div className="text-center pt-4 md:pt-0">
                         <div className="flex items-center gap-2">
-                            <PMedium className="font-medium text-secondary-text-color">$ {totalVolume}</PMedium>
+                            <PMedium className="font-medium text-secondary-text-color">$ {totalVolume.toFixed(4)}</PMedium>
                             {/* <Badge variant="positive">+ 3.2%</Badge> */}
                         </div>
                         <PExtraSmall className="text-tertiary-text-color mt-2">Total Volume</PExtraSmall>
@@ -129,19 +127,27 @@ export default function Body({ id }: { id: string }) {
 
                     {/* Settle Time Start */}
                     <div className="text-center  pt-4 md:pt-0">
-                        <PMedium className="text-sm text-secondary-text-color flex flex-col">
-                            <span>{tokenInfo.temp_starts_at ? dayjs.unix(Number(tokenInfo.temp_starts_at)).format("YYYY-DD-MM") : '---- -- --'}</span>
-                            <span className="text-xs">{tokenInfo.temp_starts_at ? dayjs.unix(Number(tokenInfo.temp_starts_at)).format("hh:mm A") : '-- : -- --'}</span>
-                        </PMedium>
+                        {
+                            tokenInfo.temp_starts_at ?
+                                <PMedium className="text-sm text-secondary-text-color flex flex-col">
+                                    <span>{dayjs.unix(Number(tokenInfo.temp_starts_at)).format("YYYY-DD-MM")}</span>
+                                    <span className="text-xs">{dayjs.unix(Number(tokenInfo.temp_starts_at)).format("hh:mm A")}</span>
+                                </PMedium>
+                                : '-'
+                        }
                         <PExtraSmall className="text-tertiary-text-color mt-2">Settle time start</PExtraSmall>
                     </div>
 
                     {/* Settle Time end */}
                     <div className="text-center  pt-4 md:pt-0">
-                        <PMedium className="text-sm text-secondary-text-color flex flex-col">
-                            <span>{tokenInfo.temp_ends_at ? dayjs.unix(Number(tokenInfo.temp_ends_at)).format("YYYY-DD-MM") : '---- -- --'}</span>
-                            <span className="text-xs">{tokenInfo.temp_ends_at ? dayjs.unix(Number(tokenInfo.temp_ends_at)).format("hh:mm A") : '-- : -- --'}</span>
-                        </PMedium>
+                        {
+                            tokenInfo.temp_ends_at ?
+                                <PMedium className="text-sm text-secondary-text-color flex flex-col">
+                                    <span>{dayjs.unix(Number(tokenInfo.temp_ends_at)).format("YYYY-DD-MM")}</span>
+                                    <span className="text-xs">{dayjs.unix(Number(tokenInfo.temp_ends_at)).format("hh:mm A")}</span>
+                                </PMedium>
+                                : '-'
+                        }
                         <PExtraSmall className="text-tertiary-text-color mt-2">Settle time end</PExtraSmall>
                     </div>
 
@@ -158,8 +164,10 @@ export default function Body({ id }: { id: string }) {
                 </div>
             </div>
 
+
+
             {/* Filter row */}
-            <div className="flex flex-col md:flex-row justify-between md:items-center mt-6">
+            <div className="flex flex-wrap md:flex-nowrap justify-between items-center mt-6">
                 <div className='space-y-1 pb-4 md:pb-0'>
                     <H4>My Pre-Market Trades</H4>
                     <PSmall className='underline'>How it works ?</PSmall >

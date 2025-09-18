@@ -13,13 +13,14 @@ import { toast } from "sonner"
 import aptosClient, { getTxnOnExplorer } from "@/lib/aptos"
 import { Token } from "@/types/premarket"
 import { moduleAddress } from "@/utils/env"
-import { WalletSelector } from "@/components/connectwallet"
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { IoCheckmark } from "react-icons/io5"
 import { useApp } from "@/contexts/AppProvider"
 import { InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk"
 import { TokenConfig } from "@/cross-chain-core"
 import { useBalance } from "@/contexts/BalanceContext"
+import { WalletButton } from "@/components/wallet/WalletButton"
+import { IoIosArrowDown } from "react-icons/io"
 interface CreateOfferModalProps {
     token: Token
     tokenAddr: string;
@@ -34,12 +35,12 @@ interface CreateOfferModalProps {
 export default function CreateOfferModal({ open, setOpen, token, tokenAddr, balance, collateralTokens, collateralToken, onCollateralChange, priceInUsd }: CreateOfferModalProps) {
     const { sourceChain, sponsorAccount, provider } = useApp()
     const { aptosBalance, refetchBalancesWithDelay } = useBalance()
-    const { account, signAndSubmitTransaction, wallet, signTransaction } = useWallet();
+    const { connected, account, signAndSubmitTransaction, wallet, signTransaction } = useWallet();
     const [isBuy, setIsBuy] = useState(true);
     const [tokenprice, setTokenPrice] = useState<string>('');
     const [desiredAmount, setDesiredAmount] = useState('')
     const [collateralAmount, setCollateralAmount] = useState(0);
-    const [acturalPrice, setActuralPrice] = useState(0);
+    const [actualPrice, setActuralPrice] = useState(0);
     const [orderType, setOrderType] = useState<string>("full");
     const isFullMatch = orderType === "full"; // boolean
     const [currentStep, setCurrentStep] = useState(1);
@@ -69,11 +70,13 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
         setTokenPrice(value);
         console.log(token_price, priceInUsd)
         const priceInApt = token_price / priceInUsd;
+        console.log(priceInUsd)
         setActuralPrice(priceInApt);
 
-        const collateral = priceInApt * Number(desiredAmount || 0);
-        setCollateralAmount(collateral);
+        const collateral = (priceInApt * Number(desiredAmount || 0)).toFixed(2);
+        setCollateralAmount(Number(collateral));
     };
+
     const handleDesiredAmount = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         if (value === "" || value === ".") {
@@ -85,23 +88,114 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
         const d_amount = parseFloat(value);
         setDesiredAmount(value); // keep as string
 
-        const collateral = d_amount * acturalPrice;
-        setCollateralAmount(collateral);
+        // const price = Number(tokenprice) / priceInUsd;
+        // const formatPrice = Math.round(price * 100) / 100;
+        // const collateral = d_amount * Number(formatPrice);
+        // setCollateralAmount(collateral);
+
+        const priceInApt = Number(tokenprice) / priceInUsd;
+        const collateral = (priceInApt * Number(d_amount || 0)).toFixed(2);
+        setCollateralAmount(Number(collateral));
     };
 
+    // const createOffer = async () => {
+    //     if (!account) return [];
+
+    //     const price = (Number(tokenprice) / priceInUsd) * Math.pow(10, (collateralToken.decimals || 0));
+    //     const amount = Number(desiredAmount) * 10000
+
+    //     try {
+    //         const collateral = Number(tokenprice) / priceInUsd;
+    //         const transactionData: InputGenerateTransactionPayloadData = {
+    //             function: `${moduleAddress}::premarket::create_offer_entry`,
+    //             functionArguments: [
+    //                 tokenAddr,
+    //                 price,
+    //                 amount,
+    //                 isBuy,
+    //                 isFullMatch,
+    //                 collateralToken.tokenId.address
+    //             ]
+    //         }
+    //         console.log(transactionData)
+    //         let hash = ""
+    //         if (sourceChain !== "Aptos") {
+    //             // if (collateral > Number(aptosBalance)) {
+    //             //     const desiredAmount = collateral - Number(aptosBalance);
+    //             //     const quote = await provider?.getQuote({
+    //             //         amount: desiredAmount.toString(),
+    //             //         originChain: sourceChain,
+    //             //         type: "transfer",
+    //             //     });
+    //             //     console.log(quote, desiredAmount)
+    //             //     await provider.transfer({
+    //             //         sourceChain,
+    //             //         wallet,
+    //             //         destinationAddress: account?.address?.toString() ?? "",
+    //             //         mainSigner: sponsorAccount,
+    //             //         amount: desiredAmount.toString(),
+    //             //         sponsorAccount,
+    //             //     })
+    //             // };
+
+    //             const rawTransaction = await aptosClient.transaction.build.simple({
+    //                 data: transactionData,
+    //                 options: {
+    //                     maxGasAmount: 2000,
+    //                 },
+    //                 sender: account.address,
+    //                 withFeePayer: true,
+    //             });
+
+    //             const response = await signTransaction({
+    //                 transactionOrPayload: rawTransaction,
+    //             });
+
+    //             const sponsorAuthenticator = aptosClient.transaction.signAsFeePayer({
+    //                 signer: sponsorAccount,
+    //                 transaction: rawTransaction,
+    //             });
+
+    //             const txnSubmitted = await aptosClient.transaction.submit.simple(
+    //                 {
+    //                     transaction: rawTransaction,
+    //                     senderAuthenticator: response.authenticator,
+    //                     feePayerAuthenticator: sponsorAuthenticator,
+    //                 }
+    //             );
+
+    //             hash = txnSubmitted.hash;
+    //         } else {
+    //             const response = await signAndSubmitTransaction({ data: transactionData });
+    //             hash = response.hash;
+    //         }
+    //         await aptosClient.waitForTransaction({ transactionHash: hash });
+    //         toast.success(`Transaction completed`, {
+    //             action: <a target="_blank" href={getTxnOnExplorer(hash)} style={{ color: "green", textDecoration: "underline" }}>View Txn</a>,
+    //             icon: <IoCheckmark />
+    //         });
+
+    //         refetchBalancesWithDelay(300);
+    //         setOpen(false)
+    //     } catch (error: any) {
+    //         console.log(error);
+    //         toast.error(`Failed to create offer: ${error} `)
+    //     }
+    // };
     const createOffer = async () => {
         if (!account) return [];
 
         const price = (Number(tokenprice) / priceInUsd) * Math.pow(10, (collateralToken.decimals || 0));
+        const formatPrice = BigInt(Math.floor(price));
+
         const amount = Number(desiredAmount) * 10000
 
         try {
-            const collateral = Number(tokenprice) / priceInUsd;
             const transactionData: InputGenerateTransactionPayloadData = {
                 function: `${moduleAddress}::premarket::create_offer_entry`,
                 functionArguments: [
                     tokenAddr,
-                    price,
+                    formatPrice,
                     amount,
                     isBuy,
                     isFullMatch,
@@ -110,24 +204,6 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
             }
             let hash = ""
             if (sourceChain !== "Aptos") {
-                if (collateral > Number(aptosBalance)) {
-                    const desiredAmount = collateral - Number(aptosBalance);
-                    const quote = await provider?.getQuote({
-                        amount: desiredAmount.toString(),
-                        originChain: sourceChain,
-                        type: "transfer",
-                    });
-                    console.log(quote, desiredAmount)
-                    await provider.transfer({
-                        sourceChain,
-                        wallet,
-                        destinationAddress: account?.address?.toString() ?? "",
-                        mainSigner: sponsorAccount,
-                        amount: desiredAmount.toString(),
-                        sponsorAccount,
-                    })
-                };
-
                 const rawTransaction = await aptosClient.transaction.build.simple({
                     data: transactionData,
                     options: {
@@ -182,10 +258,10 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
         setCurrentStep(2);
     }
 
- 
+
 
     return (
-        <div className="bg-bottom-layer-2 rounded-2xl w-full py-4 px-5 mt-0 ">
+        <div className="w-full py-4 px-5 mt-0 ">
             <div className="flex items-center justify-between">
                 <Badge variant="outline">Step {currentStep}/2</Badge>
             </div>
@@ -272,7 +348,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                             <DropdownMenuTrigger className="py-2 px-3 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer gap-2">
                                 <Image src={collateralToken.icon} alt={collateralToken.symbol} height={20} width={20} className="rounded-full" />
                                 {collateralToken.symbol}
-                                {/* <IoIosArrowDown className='ms-2' /> */}
+                                <IoIosArrowDown className='ms-2' />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="bg-secondary-button-color w-40 rounded-md">
                                 <DropdownMenuSeparator />
@@ -349,7 +425,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                 </div>
                 <div className="flex items-center justify-between">
                     <PMedium>For</PMedium>
-                    <PMedium>{collateralAmount} <span className="text-tertiary-text-color text-xs">APT</span></PMedium>
+                    <PMedium>{collateralAmount} <span className="text-tertiary-text-color text-xs">{collateralToken.symbol}</span></PMedium>
                 </div>
                 <div className="flex items-center justify-between">
                     <PMedium>Fill Type</PMedium>
@@ -360,26 +436,33 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                     <PSmall className="text-start leading-5">Confirm that you want to {isBuy ? 'buy' : 'sell'} {desiredAmount} {token.symbol} for {collateralAmount} APT IN Pre-market.</PSmall>
                 </div> */}
             </div>
+            {
+                connected ?
+                    <div className="flex justify-between">
+                        {/* Step 1 Buttons */}
+                        {currentStep === 1 && (
+                            <Button onClick={() => handleNextClick()} className="w-full mt-4" disabled={!collateralAmount || !tokenprice || !desiredAmount}>Next</Button>
+                        )}
 
-            <div className="flex justify-between">
-                {/* Step 1 Buttons */}
-                {currentStep === 1 && (
-                    <Button onClick={() => handleNextClick()} className="w-full mt-4" disabled={!collateralAmount || !tokenprice || !desiredAmount}>Next</Button>
-                )}
-
-                {/* Step 2 Buttons */}
-                {currentStep === 2 && (
-                    <div className="flex items-center justify-between gap-4 mt-6 w-full">
-                        <Button variant="ghost" className="flex-1" onClick={() => setCurrentStep(1)}>Back</Button>
-                        {
-                            account ?
-                                <Button className="flex-1" onClick={() => createOffer()}>Confirm</Button>
-                                :
-                                <WalletSelector />
-                        }
+                        {/* Step 2 Buttons */}
+                        {currentStep === 2 && (
+                            <div className="flex items-center justify-between gap-4 mt-6 w-full">
+                                <Button variant="ghost" className="flex-1" onClick={() => setCurrentStep(1)}>Back</Button>
+                                {
+                                    account ?
+                                        <Button className="flex-1" onClick={() => createOffer()}>Confirm</Button>
+                                        :
+                                        <WalletButton />
+                                }
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
+                    :
+                    <div className="mt-4 text-center">
+                        <WalletButton />
+                    </div>
+
+            }
         </div>
         // </div>
     )

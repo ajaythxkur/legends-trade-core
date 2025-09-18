@@ -1,13 +1,14 @@
 'use client'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useMemo } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { LuSearch } from "react-icons/lu";
+export type SortOrder = "asc" | "desc"
 interface FilterProps {
-    sortOrder: string;
+    sortOrder: SortOrder;
     network: number;
-    setSortOrder: Dispatch<SetStateAction<string>>
+    setSortOrder: Dispatch<SetStateAction<SortOrder>>
     setNetwork: Dispatch<SetStateAction<number>>
     setDebounce: Dispatch<SetStateAction<string>>
     debounce: string;
@@ -15,24 +16,13 @@ interface FilterProps {
 }
 
 export default function Filters({ setSortOrder, setNetwork, setDebounce, debounce, isLoading, sortOrder, network }: FilterProps) {
-    const networks = [
-        {
-            chain: 4,
-            name: 'All'
-        },
-        {
-            chain: 0,
-            name: 'Aptos'
-        },
-        {
-            chain: 1,
-            name: 'Solana'
-        },
-        {
-            chain: 2,
-            name: 'Ethereum'
-        }
-    ]
+    const networks = useMemo(() => [
+        { chain: 4, name: 'All' },
+        { chain: 0, name: 'Aptos' },
+        { chain: 1, name: 'Solana' },
+        { chain: 2, name: 'Ethereum' }
+    ], []);
+
     return (
         <div className="flex gap-2 md:gap-4 items-center">
             {/* sortby */}
@@ -81,10 +71,10 @@ export default function Filters({ setSortOrder, setNetwork, setDebounce, debounc
                         className="pe-4 py-2 md:py-3 focus:outline-none w-full"
                     />
                 </div>
-                {
-                    isLoading &&
-                    <div className="w-6 h-6 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-                }
+
+                {isLoading && (
+                    <div className="animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full h-4 w-4" />
+                )}
             </div>
         </div>
     )

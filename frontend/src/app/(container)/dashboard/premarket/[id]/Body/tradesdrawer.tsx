@@ -8,7 +8,7 @@ import { Token, TokenOffers, TokenOrder } from "@/types/premarket";
 import { truncateAddress } from "@aptos-labs/ts-sdk";
 import dayjs from "dayjs";
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { useCountdown } from "./Countdown";
+import { useCountdown } from "../../../../../../components/Countdown";
 import Orders from "./Orders";
 import { Button } from "@/components/ui/button";
 import { InputTransactionData, useWallet } from "@aptos-labs/wallet-adapter-react";
@@ -16,19 +16,24 @@ import { moduleAddress } from "@/utils/env";
 import aptosClient from "@/lib/aptos";
 import { toast } from "sonner";
 import shortAddress from "@/utils/shortAddress";
+import { TokenConfig } from "@/cross-chain-core";
 dayjs.extend(relativeTime);
 
 interface TradesDrawerPrps {
     offer: TokenOffers
     orders: TokenOrder[]
     tokenInfo: Token;
+    collateral: number;
+    collTokenPrice: number
+    collateralToken: TokenConfig
 }
-export default function TradesDrawer({ offer, orders, tokenInfo }: TradesDrawerPrps) {
+export default function TradesDrawer({ offer, orders, tokenInfo, collateral, collTokenPrice, collateralToken }: TradesDrawerPrps) {
     const { account, signAndSubmitTransaction } = useWallet()
     const { closeDrawer } = useDrawer();
     const filled_amount = Number(offer.filled_amount) / 10000;
     const amount = Number(offer.amount) / 10000;
-    const price = (Number(offer.price) / Math.pow(10, 8)) * 5
+    const price = (Number(offer.price) / Math.pow(10, Number(collateralToken?.decimals))) * collTokenPrice
+    const formatPrice = Math.round(price * 100) / 100;
 
     const settleduration = tokenInfo?.settle_duration;  // 86400
     const settlestartsat = tokenInfo?.settle_started_at;  // 1756270267
@@ -115,7 +120,7 @@ export default function TradesDrawer({ offer, orders, tokenInfo }: TradesDrawerP
                 </div>
                 <div className="flex justify-between items-center">
                     <PSmall className="text-tertiary-text-color">Price</PSmall>
-                    <PMedium>$ {price}</PMedium>
+                    <PMedium>$ {formatPrice}</PMedium>
                 </div>
                 <div className="flex justify-between items-center">
                     <PSmall className="text-tertiary-text-color">Fill type</PSmall>

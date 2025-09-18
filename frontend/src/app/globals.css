@@ -135,3 +135,11 @@
 .ido-required {
   @apply text-negative-text h-2 w-2;
 }
+
+[data-vaul-drawer][data-vaul-drawer-direction=bottom]::after{
+  height: unset !important;
+}
+
+.data-\[vaul-drawer-direction\=bottom\]\:mt-24[data-vaul-drawer-direction="bottom"] {
+    margin-top: 0px !important;
+}

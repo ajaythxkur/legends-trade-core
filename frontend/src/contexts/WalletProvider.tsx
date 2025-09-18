@@ -16,8 +16,8 @@ const WalletContextProvider = ({ children }: { children: React.ReactNode }) => {
     // }
     // if(environment == "testnet"){
     // }
-    const endpoint = web3.clusterApiUrl("testnet") 
-    return(
+    const endpoint = web3.clusterApiUrl("devnet")
+    return (
         <ConnectionProvider endpoint={endpoint} config={{
             commitment: "confirmed"
         }}>

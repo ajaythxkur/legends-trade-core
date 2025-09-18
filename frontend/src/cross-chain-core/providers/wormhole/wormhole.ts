@@ -33,21 +33,23 @@ import {
   WormholeClaimTransferRequest,
   WormholeWithdrawRequest,
   WormholeWithdrawResponse,
+  WormholeDepositResponse,
+  WormholeCreateSignerRequest,
 } from "./types";
 import { SolanaDerivedWallet } from "@aptos-labs/derived-wallet-solana";
 import { EIP1193DerivedWallet } from "@aptos-labs/derived-wallet-ethereum";
+import { DepositSigner } from "./signers/DepositSigner";
 
 export class WormholeProvider
   implements
-    CrossChainProvider<
-      WormholeQuoteRequest,
-      WormholeQuoteResponse,
-      WormholeTransferRequest,
-      WormholeTransferResponse,
-      WormholeWithdrawRequest,
-      WormholeWithdrawResponse
-    >
-{
+  CrossChainProvider<
+    WormholeQuoteRequest,
+    WormholeQuoteResponse,
+    WormholeTransferRequest,
+    WormholeTransferResponse,
+    WormholeWithdrawRequest,
+    WormholeWithdrawResponse
+  > {
   private crossChainCore: CrossChainCore;
 
   private _wormholeContext: Wormhole<"Mainnet" | "Testnet"> | undefined;
@@ -80,7 +82,9 @@ export class WormholeProvider
 
   private async getRoute(
     sourceChain: Chain,
-    destinationChain: Chain
+    destinationChain: Chain,
+    sourceTokenAddr: string,
+    dstTokenAddr: string
   ): Promise<{
     route: WormholeRouteResponse;
     request: WormholeRequest;
@@ -91,7 +95,9 @@ export class WormholeProvider
 
     const { sourceToken, destToken } = this.getTokenInfo(
       sourceChain,
-      destinationChain
+      destinationChain,
+      sourceTokenAddr,
+      dstTokenAddr
     );
 
     const destContext = this._wormholeContext
@@ -131,7 +137,7 @@ export class WormholeProvider
   }
 
   async getQuote(input: WormholeQuoteRequest): Promise<WormholeQuoteResponse> {
-    const { amount, originChain, type } = input;
+    const { amount, originChain, type, sourceTokenAddr, dstTokenAddr } = input;
 
     if (!this._wormholeContext) {
       await this.setWormholeContext(originChain);
@@ -145,7 +151,9 @@ export class WormholeProvider
 
     const { route, request } = await this.getRoute(
       sourceChain,
-      destinationChain
+      destinationChain,
+      sourceTokenAddr,
+      dstTokenAddr
     );
 
     // TODO what is nativeGas for?
@@ -305,12 +313,14 @@ export class WormholeProvider
         amount: input.amount,
         originChain: input.sourceChain,
         type: "transfer",
+        sourceTokenAddr: input.sourceTokenAddr,
+        dstTokenAddr: input.dstTokenAddr
       });
     }
     // Submit transfer transaction from origin chain
     let { originChainTxnId, receipt } = await this.submitCCTPTransfer(input);
     // Claim transfer transaction on destination chain
-    console.log({input})
+    console.log({ input })
     const { destinationChainTxnId } = await this.claimCCTPTransfer({
       receipt,
       mainSigner: input.mainSigner,
@@ -434,7 +444,7 @@ export class WormholeProvider
   getChainConfig(chain: Chain): ChainConfig {
     const chainConfig =
       this.crossChainCore.CHAINS[
-        chain as keyof typeof this.crossChainCore.CHAINS
+      chain as keyof typeof this.crossChainCore.CHAINS
       ];
     if (!chainConfig) {
       throw new Error(`Chain config not found for chain: ${chain}`);
@@ -444,21 +454,324 @@ export class WormholeProvider
 
   getTokenInfo(
     sourceChain: Chain,
-    destinationChain: Chain
+    destinationChain: Chain,
+    sourceTokenAddr: string,
+    dstTokenAddr: string
   ): {
     sourceToken: TokenId;
     destToken: TokenId;
   } {
     const sourceToken: TokenId = Wormhole.tokenId(
-      this.crossChainCore.TOKENS[sourceChain].tokenId.chain as Chain,
-      this.crossChainCore.TOKENS[sourceChain].tokenId.address
+      sourceChain,
+      sourceTokenAddr
     );
 
     const destToken: TokenId = Wormhole.tokenId(
-      this.crossChainCore.TOKENS[destinationChain].tokenId.chain as Chain,
-      this.crossChainCore.TOKENS[destinationChain].tokenId.address
+      destinationChain,
+      dstTokenAddr
     );
 
     return { sourceToken, destToken };
   }
+
+  // ===========================================================================
+  // ===========================================================================
+  // ===========================================================================
+
+  // Modified depositToken method for WormholeProvider class
+  async depositToken(
+    input: WormholeDepositResponse
+  ): Promise<WormholeTransferResponse> {
+    if (this.crossChainCore._dappConfig?.aptosNetwork === Network.DEVNET) {
+      throw new Error("Devnet is not supported on Wormhole");
+    }
+
+    try {
+      logger.log("Starting deposit token process", input);
+
+      // Initialize wormhole context if not already set
+      if (!this._wormholeContext) {
+        await this.setWormholeContext(input.sourceChain);
+      }
+
+      // Get quote if amount is provided
+      if (input.amount) {
+        logger.log("Getting quote for deposit", {
+          amount: input.amount,
+          sourceChain: input.sourceChain,
+          sourceToken: input.sourceTokenAddr,
+          destToken: input.dstTokenAddr
+        });
+
+        await this.getQuote({
+          amount: input.amount,
+          originChain: input.sourceChain,
+          type: "transfer",
+          sourceTokenAddr: input.sourceTokenAddr,
+          dstTokenAddr: input.dstTokenAddr
+        });
+      }
+
+      // Validate required components are initialized
+      if (!this.wormholeRoute || !this.wormholeRequest || !this.wormholeQuote) {
+        throw new Error("Wormhole route, request, or quote not initialized for deposit");
+      }
+
+      // Submit transfer transaction from source chain
+      logger.log("Submitting deposit transfer on source chain");
+      const { originChainTxnId, receipt } = await this.submitDepositTransfer(input);
+
+      if (!originChainTxnId) {
+        throw new Error("Failed to get origin chain transaction ID");
+      }
+
+      logger.log("Source chain deposit transaction submitted", { originChainTxnId });
+
+      // Claim transfer transaction on destination chain (Aptos)
+      logger.log("Starting claim process on destination chain");
+      const { destinationChainTxnId } = await this.claimDepositTransfer({
+        receipt,
+        mainSigner: input.mainSigner,
+        sponsorAccount: input.sponsorAccount,
+      });
+
+      logger.log("Deposit completed", { originChainTxnId, destinationChainTxnId });
+
+      return {
+        originChainTxnId,
+        destinationChainTxnId
+      };
+
+    } catch (error) {
+      logger.error("Deposit token failed", error);
+      throw new Error(`Deposit failed: ${error || error}`);
+    }
+  }
+
+  // New method specifically for handling deposit transfers
+  private async submitDepositTransfer(
+    input: WormholeDepositResponse
+  ): Promise<WormholeStartTransferResponse> {
+    const { sourceChain, wallet, destinationAddress } = input;
+
+    if (!this._wormholeContext) {
+      throw new Error("Wormhole context not initialized for deposit");
+    }
+    if (!this.wormholeRoute || !this.wormholeRequest || !this.wormholeQuote) {
+      throw new Error("Wormhole components not initialized for deposit");
+    }
+
+    let signerAddress: string;
+    const chainContext = this.getChainConfig(sourceChain).context;
+
+    // Get signer address based on source chain
+    if (chainContext === "Solana") {
+      // Handle Solana wallet
+      if (wallet && typeof wallet === 'object' && 'publicKey' in wallet) {
+        signerAddress = wallet.publicKey?.toString() || "";
+      } else if (wallet && typeof wallet === 'object' && 'solanaWallet' in wallet) {
+        signerAddress = (wallet as SolanaDerivedWallet).solanaWallet.publicKey?.toBase58() || "";
+      } else {
+        throw new Error("Invalid Solana wallet for deposit");
+      }
+    } else if (chainContext === "Ethereum") {
+      // Handle Ethereum wallet
+      try {
+        [signerAddress] = await (wallet as EIP1193DerivedWallet).eip1193Provider.request({
+          method: "eth_requestAccounts",
+        });
+      } catch (error) {
+        throw new Error(`Failed to get Ethereum account for deposit: ${error}`);
+      }
+    } else {
+      throw new Error(`Unsupported source chain context for deposit: ${chainContext}`);
+    }
+
+    if (!signerAddress) {
+      throw new Error("Failed to get signer address for deposit");
+    }
+
+    logger.log("Deposit signer address", signerAddress);
+
+    // Create deposit signer
+    // const depositSigner = new DepositSigner(
+    const depositSigner = new Signer(
+      this.getChainConfig(sourceChain),
+      signerAddress,
+      {},
+      wallet
+    );
+
+    logger.log("Initiating deposit transfer", {
+      sourceChain,
+      signerAddress,
+      destinationAddress: destinationAddress.toString()
+    });
+
+    // Initiate the deposit transfer
+    let receipt;
+    try {
+      receipt = await this.wormholeRoute.initiate(
+        this.wormholeRequest,
+        depositSigner,
+        this.wormholeQuote,
+        Wormhole.chainAddress("Aptos", destinationAddress.toString())
+      );
+    } catch (error) {
+      throw new Error(`Failed to initiate deposit transfer: ${error}`);
+    }
+
+    const originChainTxnId = "originTxs" in receipt
+      ? receipt.originTxs[receipt.originTxs.length - 1].txid
+      : undefined;
+
+    if (!originChainTxnId) {
+      logger.error("No origin transaction ID in receipt", receipt);
+    }
+
+    return {
+      originChainTxnId: originChainTxnId || "",
+      receipt
+    };
+  }
+
+  // New method specifically for handling deposit claims
+  private async claimDepositTransfer(
+    input: WormholeClaimTransferRequest
+  ): Promise<{ destinationChainTxnId: string }> {
+    logger.log("Starting deposit claim process", input);
+
+    let { receipt, mainSigner, sponsorAccount } = input;
+
+    if (!this.wormholeRoute) {
+      throw new Error("Wormhole route not initialized for deposit claim");
+    }
+
+    logger.log("Deposit claim signer", {
+      address: mainSigner.accountAddress.toString(),
+      hasSponsor: !!sponsorAccount
+    });
+
+    let retries = 0;
+    const maxRetries = 10; // Increased retries for deposits
+    const baseDelay = 2000; // Longer initial delay for deposits
+
+    while (retries < maxRetries) {
+      try {
+        logger.log(`Deposit claim attempt ${retries + 1}/${maxRetries}`);
+
+        for await (receipt of this.wormholeRoute.track(receipt, 180 * 1000)) { // 3 minute timeout
+          logger.log("Deposit receipt state", {
+            state: receipt.state,
+            required: TransferState.SourceInitiated
+          });
+
+          if (receipt.state >= TransferState.SourceInitiated) {
+            logger.log("Deposit receipt is ready for claiming", receipt);
+
+            try {
+              // Create Aptos signer for claiming the deposit
+              const claimSigner = new AptosLocalSigner(
+                "Aptos",
+                {},
+                mainSigner, // the account that signs the "claim" transaction
+                sponsorAccount || undefined // the fee payer account
+              );
+
+              if (routes.isManual(this.wormholeRoute)) {
+                logger.log("Executing manual deposit claim");
+                const claimReceipt = await this.wormholeRoute.complete(claimSigner, receipt);
+
+                logger.log("Deposit claim completed", claimReceipt);
+                const destinationChainTxnId = claimSigner.claimedTransactionHashes();
+
+                if (!destinationChainTxnId) {
+                  throw new Error("No destination transaction hash from claim");
+                }
+
+                return { destinationChainTxnId };
+              } else {
+                logger.log("Automatic deposit completion - no manual claim needed");
+                return { destinationChainTxnId: "" };
+              }
+            } catch (claimError) {
+              logger.error("Failed to claim deposit", claimError);
+              throw new Error(`Deposit claim failed: ${claimError}`);
+            }
+          }
+        }
+      } catch (trackingError) {
+        logger.error(
+          `Error tracking deposit transfer (attempt ${retries + 1}/${maxRetries}):`,
+          trackingError
+        );
+
+        if (retries === maxRetries - 1) {
+          throw new Error(`Deposit tracking failed after ${maxRetries} attempts: ${trackingError}`);
+        }
+
+        const delay = baseDelay * Math.pow(2, retries); // Exponential backoff
+        logger.log(`Retrying deposit claim in ${delay}ms`);
+        await sleep(delay);
+        retries++;
+      }
+    }
+
+    throw new Error(`Deposit claim failed after ${maxRetries} attempts`);
+  }
+
+  async createSigner(input: WormholeCreateSignerRequest) {
+    const { sourceChain, wallet, sponsorAccount } = input;
+
+    // if (!this._wormholeContext) {
+    //   await this.setWormholeContext(sourceChain);
+    // }
+    // if (!this.wormholeRoute || !this.wormholeRequest || !this.wormholeQuote) {
+    //   throw new Error("Wormhole route, request, or quote not initialized");
+    // }
+
+    console.log({ input })
+    let signerAddress: string;
+
+    const chainContext = this.getChainConfig(sourceChain).context;
+    console.log({ chainContext })
+    if (chainContext === "Aptos") {
+      const signer = new Signer(
+        this.getChainConfig("Aptos"),
+        (
+          await input.wallet.features["aptos:account"].account()
+        ).address.toString(),
+        {},
+        input.wallet,
+        undefined,
+        sponsorAccount
+      );
+      return signer
+    }
+    //const currentAccount = await wallet.getAccount();
+    if (chainContext === "Solana") {
+      signerAddress =
+        (wallet as SolanaDerivedWallet).solanaWallet.publicKey?.toBase58() ||
+        "";
+    } else {
+      // is Ethereum
+      [signerAddress] = await (
+        wallet as EIP1193DerivedWallet
+      ).eip1193Provider.request({
+        method: "eth_requestAccounts",
+      });
+    }
+    logger.log("signerAddress", signerAddress);
+
+    //const chainContext =
+
+    const signer = new Signer(
+      this.getChainConfig(sourceChain),
+      signerAddress,
+      {},
+      wallet
+    );
+    return signer;
+  }
+
 }

@@ -1,5 +1,5 @@
 'use client'
-import { H5, H6, PExtraSmall, PMedium, } from "@/components/ui/typography";
+import { H1, H5, H6, PExtraSmall, PMedium, } from "@/components/ui/typography";
 import Image from "next/image";
 import { IoMdArrowUp } from "react-icons/io";
 import { LuCopy } from "react-icons/lu";
@@ -12,6 +12,8 @@ import backendApi from "@/utils/backendApi";
 import SpinnerLoading from "@/components/SpinnerLoading";
 import Empty from "@/components/Empty";
 import shortAddress from "@/utils/shortAddress";
+import { Inbox } from "lucide-react";
+import { WalletButton } from "@/components/wallet/WalletButton";
 
 export default function Body() {
     const { account, isLoading } = useWallet()
@@ -20,6 +22,7 @@ export default function Body() {
     const [offset, setOffset] = useState(0)
     const [total, setTotal] = useState(0)
     const [loading, setLoading] = useState(false)
+    const [tokenStatus, setTokenStatus] = useState('all')
 
     const getUserData = async () => {
         try {
@@ -33,7 +36,7 @@ export default function Body() {
     const getUserPremarketTokens = useCallback(async () => {
         setLoading(true)
         try {
-            const response = await backendApi.getUserPremarketTokens(String(account?.address), 10, offset)
+            const response = await backendApi.getUserPremarketTokens(String(account?.address), 10, offset, tokenStatus)
             setTokens(response.data.tokens);
             setTotal(response.data.total);
         } catch (error) {
@@ -41,7 +44,7 @@ export default function Body() {
         } finally {
             setLoading(false)
         }
-    }, [account, offset]);
+    }, [account, offset, tokenStatus]);
 
     useEffect(() => {
         getUserData()
@@ -52,7 +55,15 @@ export default function Body() {
     }, [getUserPremarketTokens])
 
     if (isLoading) return <SpinnerLoading />;
-    if (!account) return <Empty title="Wallet not connected" />;
+    if (!account) return (
+        <div className="h-full text-center text-action-text-color rounded-2xl bg-card-bg shadow-lg flex items-center justify-center py-22">
+            <div>
+                <Inbox className="h-20 w-20 m-auto text-tag-stroke-color" />
+                <H1 className="mt-6 mb-5">Wallet not connected</H1>
+                <WalletButton />
+            </div>
+        </div>
+    )
     return (
         <>
             <div className="md:p-4">
@@ -89,7 +100,7 @@ export default function Body() {
                     </div>
                 </div>
 
-                <DashTabs tokens={tokens} total={total} offset={offset} setOffset={setOffset} loading={loading} />
+                <DashTabs tokens={tokens} total={total} offset={offset} setOffset={setOffset} loading={loading} tokenStatus={tokenStatus} setTokenStatus={setTokenStatus} />
             </div>
         </>
     )

@@ -10,23 +10,26 @@ import Link from "next/link";
 import { Token } from "@/types/premarket";
 import CountDownBadge from "@/components/CountDownBadge";
 import dayjs from "dayjs";
-import PaginationNew from "@/components/PaginationNew";
+import PaginationNew from "@/components/Pagination";
 import { Dispatch, SetStateAction, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu";
 import { IoIosArrowDown } from "react-icons/io";
+import Empty from "@/components/Empty";
+import { IoCloseOutline } from "react-icons/io5";
 interface DashTabsProps {
     tokens: Token[];
     total: number;
     offset: number;
     setOffset: Dispatch<SetStateAction<number>>;
-    loading: boolean
+    loading: boolean,
+    tokenStatus: string,
+    setTokenStatus: Dispatch<SetStateAction<string>>
 }
-export default function DashTabs({ tokens, total, offset, setOffset, loading }: DashTabsProps) {
-    const tokenstatus = ['all', 'ended', 'not started', 'ongoing'];
-    const [currentStatus, setCurrentStatus] = useState('all');
+export default function DashTabs({ tokens, total, offset, setOffset, loading, tokenStatus, setTokenStatus }: DashTabsProps) {
+    const tokenstatus = ['all', 'ended', 'not-started', 'ongoing'];
     return (
         <Tabs defaultValue="premarket" className="mt-6 lg:mt-8 xl:mt-10 2xl:mt-12">
-            <div className="flex justify-between items-center gap-4">
+            <div className="flex flex-wrap md:flex-nowarp justify-between items-center gap-4">
                 <TabsList>
                     <TabsTrigger value="premarket">PreMarket</TabsTrigger>
                     <TabsTrigger value="points">Points</TabsTrigger>
@@ -34,7 +37,7 @@ export default function DashTabs({ tokens, total, offset, setOffset, loading }: 
                 </TabsList>
 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
+                    <DropdownMenuTrigger className="py-2.5 md:py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
                         Status<IoIosArrowDown className='ms-2' />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -45,8 +48,8 @@ export default function DashTabs({ tokens, total, offset, setOffset, loading }: 
                                 return (
                                     <DropdownMenuItem
                                         key={i}
-                                        onClick={() => setCurrentStatus(t)}
-                                        className={`capitalize ${currentStatus === t ? 'bg-primary-button-color text-action-text-color' : ''} `}
+                                        onClick={() => setTokenStatus(t)}
+                                        className={`capitalize ${tokenStatus === t ? 'bg-primary-button-color text-action-text-color' : ''} `}
                                     >
                                         {t}
                                     </DropdownMenuItem>
@@ -56,6 +59,11 @@ export default function DashTabs({ tokens, total, offset, setOffset, loading }: 
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
+            <div className="badges lg:flex gap-4 items-center mt-4">
+                {tokenStatus !== 'all' &&
+                    <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setTokenStatus('all')}>{tokenStatus}<IoCloseOutline className="w-5 h-5" /></Badge>
+                }
+            </div>
 
 
             {/* Premarket tab content */}
@@ -64,7 +72,7 @@ export default function DashTabs({ tokens, total, offset, setOffset, loading }: 
                     {
                         tokens.map((token, index) => {
                             return (
-                                <div key={index} className="p-4 rounded-lg bg-card-bg">
+                                <div key={index} className="p-4 rounded-2xl bg-card-bg space-y-4">
                                     <div className="flex justify-between gap-4 items-center">
                                         <Link href={`/dashboard/premarket/${token.token_addr}`}>
                                             <div className="flex items-center gap-2">
@@ -88,30 +96,38 @@ export default function DashTabs({ tokens, total, offset, setOffset, loading }: 
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-between mt-4">
+                                    <div className="flex justify-between">
                                         <PSmall className="text-tertiary-text-color">Total Offer</PSmall>
                                         <P className="flex-1 text-end">{token.totalOffers}</P>
                                     </div>
 
-                                    <div className="flex justify-between mt-4">
+                                    <div className="flex justify-between">
                                         <PSmall className="text-tertiary-text-color">Total Order</PSmall>
                                         <P className="flex-1 text-end">{token.totalOrders}</P>
                                     </div>
 
-                                    <div className="flex justify-between items-center mt-4">
+                                    <div className="flex justify-between items-center">
                                         <PSmall className="text-tertiary-text-color">Settle starts</PSmall>
-                                        <div className="text-primary-text-color text-end">
-                                            <P>{token.temp_starts_at ? dayjs.unix(Number(token.temp_starts_at)).format("YYYY-DD-MM") : '---- -- --'}</P>
-                                            <PExtraSmall>{token.temp_starts_at ? dayjs.unix(Number(token.temp_starts_at)).format("hh:mm A") : '-- : -- --'}</PExtraSmall>
-                                        </div>
+                                        {
+                                            token.temp_starts_at ?
+                                                <div className="text-primary-text-color text-end">
+                                                    <P>{dayjs.unix(Number(token.temp_starts_at)).format("YYYY-DD-MM")}</P>
+                                                    <PExtraSmall className="text-xs">{dayjs.unix(Number(token.temp_starts_at)).format("hh:mm A")}</PExtraSmall>
+                                                </div>
+                                                : '-'
+                                        }
                                     </div>
 
-                                    <div className="flex justify-between items-center mt-4">
+                                    <div className="flex justify-between items-center">
                                         <PSmall className="text-tertiary-text-color">Settle Ends</PSmall>
-                                        <div className="text-primary-text-color text-end">
-                                            <P>{token.temp_ends_at ? dayjs.unix(Number(token.temp_ends_at)).format("YYYY-DD-MM") : '---- -- --'}</P>
-                                            <PExtraSmall>{token.temp_ends_at ? dayjs.unix(Number(token.temp_ends_at)).format("hh:mm A") : '-- : -- --'}</PExtraSmall>
-                                        </div>
+                                        {
+                                            token.temp_ends_at ?
+                                                <div className="text-primary-text-color text-end">
+                                                    <P>{dayjs.unix(Number(token.temp_ends_at)).format("YYYY-DD-MM")}</P>
+                                                    <PExtraSmall className="text-xs">{dayjs.unix(Number(token.temp_ends_at)).format("hh:mm A")}</PExtraSmall>
+                                                </div>
+                                                : '-'
+                                        }
                                     </div>
                                 </div>
                             )
@@ -123,7 +139,7 @@ export default function DashTabs({ tokens, total, offset, setOffset, loading }: 
 
             {/* Points tab content */}
             <TabsContent value="points" className="mt-8">
-                Points <PointsSvg className="text-tertiary-text-color" />
+                <Empty title="coming soon" />
             </TabsContent>
 
             {/* Launchpad tab content */}

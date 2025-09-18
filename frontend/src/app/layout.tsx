@@ -1,17 +1,18 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { League_Spartan } from "next/font/google";
-const font = League_Spartan({ subsets: ["latin"], weight: "500" });
 import { ThemeProvider } from 'next-themes'
 import { DrawerProvider } from '../contexts/DrawerContext';
-import { WalletProvider } from "@/components/WalletProvider";
+import { WalletProvider } from "@/components/wallet/WalletProvider";
 import { Toaster } from "@/components/ui/sonner";
-import { AutoConnectProvider } from "@/components/AutoConnectProvider";
+import { AutoConnectProvider } from "@/contexts/AutoConnectProvider";
 import NextTopLoader from 'nextjs-toploader';
 import { AppProvider } from "@/contexts/AppProvider";
 import { BalanceProvider } from "@/contexts/BalanceContext";
 import { NETWORK } from "@/utils/env";
 import WalletContextProvider from "@/contexts/WalletProvider";
+
+// const font = League_Spartan({ subsets: ["latin"], weight: "500" });
+import { Inter } from "@/components/fonts";
 
 export const metadata: Metadata = {
   title: "Legends Trade",
@@ -25,11 +26,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${font.className}`} >
+      <body className={`${Inter.className}`} >
         <ThemeProvider>
           <AutoConnectProvider>
             <WalletProvider>
               <BalanceProvider dappNetwork={NETWORK}>
+
                 <WalletContextProvider>
                   <AppProvider>
                     <DrawerProvider>
@@ -37,7 +39,8 @@ export default function RootLayout({
                       {children}
                     </DrawerProvider>
                   </AppProvider>
-                  </WalletContextProvider>
+                </WalletContextProvider>
+
               </BalanceProvider>
             </WalletProvider>
           </AutoConnectProvider>
@@ -51,7 +54,7 @@ export default function RootLayout({
               fontSize: "12px"
             },
             classNames: {
-              toast: font.className,
+              toast: Inter.className,
             }
           }}
         />

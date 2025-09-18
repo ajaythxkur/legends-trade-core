@@ -6,10 +6,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useCopyToClipboard } from "usehooks-ts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { WalletModal } from "./WalletModal";
 import { toast } from "sonner";
-import { PMedium } from "./ui/typography";
 import shortAddress from "@/utils/shortAddress";
+import { PMedium } from "../ui/typography";
+import { WalletModal } from "./WalletModal";
 
 export function WalletButton() {
     const { account, isLoading, disconnect } = useWallet();
@@ -31,7 +31,7 @@ export function WalletButton() {
 
     if (isLoading) {
         return (
-            <Button  disabled className="relative">
+            <Button disabled className="relative">
                 <span className="hidden lg:block">Connecting..</span>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
             </Button>
@@ -42,10 +42,8 @@ export function WalletButton() {
     if (!account)
         return (
             <>
-                <Button
-                    type="button"
-                    onClick={() => setOpen(true)}
-                    size={isMobile ? "sm" : "default"}
+                <Button type="button" onClick={() => setOpen(true)} 
+                // size={isMobile ? "sm" : "default"}
                 >
                     {isMobile ? <Wallet className="h-5 w-5" /> : "Connect Wallet"}
                 </Button>
@@ -63,7 +61,7 @@ export function WalletButton() {
                     {account?.ansName ||
                         shortAddress(account?.address?.toString()) ||
                         "Unknown"}
-                        <ChevronDown/>
+                    <ChevronDown />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="z-90">

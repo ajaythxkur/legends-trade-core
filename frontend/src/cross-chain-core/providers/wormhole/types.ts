@@ -1,6 +1,7 @@
 import { AccountAddressInput, Account } from "@aptos-labs/ts-sdk";
 import { AdapterWallet } from "@aptos-labs/wallet-adapter-core";
-import { routes, AttestationReceipt } from "@wormhole-foundation/sdk/dist/cjs";
+// import { routes, AttestationReceipt } from "@wormhole-foundation/sdk/dist/cjs";
+import { routes, AttestationReceipt } from "@wormhole-foundation/sdk/";
 import { Chain, AptosAccount } from "../..";
 
 export type WormholeRouteResponse = routes.Route<
@@ -24,6 +25,8 @@ export interface WormholeQuoteRequest {
   amount: string;
   originChain: Chain;
   type: "transfer" | "withdraw";
+  sourceTokenAddr: string;
+  dstTokenAddr: string;
 }
 
 export type GasStationApiKey = string;
@@ -33,6 +36,8 @@ export interface WormholeTransferRequest {
   wallet: AdapterWallet;
   destinationAddress: AccountAddressInput;
   mainSigner: Account;
+  sourceTokenAddr: string;
+  dstTokenAddr: string;
   amount?: string;
   sponsorAccount?: Account | GasStationApiKey;
 }
@@ -69,4 +74,21 @@ export interface WormholeWithdrawResponse {
 export interface WormholeStartTransferResponse {
   originChainTxnId: string;
   receipt: routes.Receipt<AttestationReceipt>;
+}
+
+export interface WormholeDepositResponse{
+  sourceChain: Chain;
+  wallet: AdapterWallet;
+  destinationAddress: AccountAddressInput;
+  mainSigner: Account;
+  sourceTokenAddr: string;
+  dstTokenAddr: string;
+  amount?: string;
+  sponsorAccount?: Account | GasStationApiKey;
+}
+
+export interface WormholeCreateSignerRequest {
+  sourceChain: Chain;
+  wallet: AdapterWallet;
+  sponsorAccount?: Account | GasStationApiKey;
 }

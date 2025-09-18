@@ -90,10 +90,13 @@ export interface CrossChainProvider<
   TTransferResponse = any,
   TWithdrawRequest = any,
   TWithdrawResponse = any,
+  TCreateSignerRequest = any,
+  TCreateSignerResponse = any,
 > {
   getQuote(params: TQuoteRequest): Promise<TQuoteResponse>;
   transfer(params: TTransferRequest): Promise<TTransferResponse>;
   withdraw(params: TWithdrawRequest): Promise<TWithdrawResponse>;
+  createSigner(params: TCreateSignerRequest): Promise<TCreateSignerResponse>;
 }
 
 export class CrossChainCore {

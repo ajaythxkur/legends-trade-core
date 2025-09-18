@@ -24,9 +24,7 @@ interface BalanceContextType {
   setGlobalTransactionInProgress: (inProgress: boolean) => void;
 }
 
-const BalanceContext = createContext<BalanceContextType | undefined>(
-  undefined
-);
+const BalanceContext = createContext<BalanceContextType | undefined>(undefined);
 
 interface BalanceProviderProps {
   children: ReactNode;
@@ -42,27 +40,16 @@ export function BalanceProvider({
     dappConfig: { aptosNetwork: dappNetwork },
   });
 
-  const [aptosBalance, setAptosBalance] = useState<string | undefined>(
-    undefined
-  );
-  const [originBalance, setOriginBalance] = useState<string | undefined>(
-    undefined
-  );
+  const [aptosBalance, setAptosBalance] = useState<string | undefined>(undefined);
+  const [originBalance, setOriginBalance] = useState<string | undefined>(undefined);
   const [isLoadingAptosBalance, setIsLoadingAptosBalance] = useState(false);
   const [isLoadingOriginBalance, setIsLoadingOriginBalance] = useState(false);
-  const [globalTransactionInProgress, setGlobalTransactionInProgress] =
-    useState(false);
+  const [globalTransactionInProgress, setGlobalTransactionInProgress] = useState(false);
 
   // Store the last used parameters for refetching
-  const [lastAptosConfig, setLastAptosConfig] = useState<{ address: string; token: string; decimals: number } | undefined>(
-    undefined
-  );
-  const [lastOriginConfig, setLastOriginConfig] = useState<
-    { address: string; token: string; decimals: number } | undefined
-  >(undefined);
-  const [lastOriginChain, setLastOriginChain] = useState<Chain | undefined>(
-    undefined
-  );
+  const [lastAptosConfig, setLastAptosConfig] = useState<{ address: string; token: string; decimals: number } | undefined>(undefined);
+  const [lastOriginConfig, setLastOriginConfig] = useState<{ address: string; token: string; decimals: number } | undefined>(undefined);
+  const [lastOriginChain, setLastOriginChain] = useState<Chain | undefined>(undefined);
 
   const fetchAptosBalance = useCallback(async (address: string, token: string, decimals: number) => {
     if (!address) return;
@@ -75,9 +62,12 @@ export function BalanceProvider({
         address,
         "Aptos",
         token,
+        // '0x69091fbab5f7d635ee7ac5098cf0c1efbe31d68fec0f2cd565e8d168daf52832',
         decimals
       );
+      console.log(`Aptos balance : ${address}, ${token}, ${decimals}}`)
       setAptosBalance(balance);
+      // console.log('fetch runing')
     } catch (error) {
       console.error("Error fetching Aptos USDC balance:", error);
       setAptosBalance(undefined);
@@ -99,8 +89,10 @@ export function BalanceProvider({
           address,
           chain,
           token,
+          // '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
           decimals
         );
+        console.log(`Origin balance : ${address}, ${chain}, ${token}, ${decimals}}`)
         setOriginBalance(balance);
       } catch (error) {
         console.error("Error fetching origin USDC balance:", error);

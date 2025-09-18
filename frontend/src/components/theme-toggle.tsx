@@ -16,8 +16,8 @@ export function ModeToggle() {
     return (
         <>
             {isClient ?
-                <Button className="rounded-full p-2 absolute bottom-14 md:bottom-4 right-4" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-                    {theme == "light" ? <IoSunnyOutline /> : <IoMoonOutline />}
+                <Button className="rounded-full p-2 md:px-3 absolute bottom-14 md:bottom-4 right-4" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+                    {theme == "light" ? <IoSunnyOutline className="h-5 w-5" /> : <IoMoonOutline className="h-5 w-5" />}
                 </Button>
                 : ''}
         </>
