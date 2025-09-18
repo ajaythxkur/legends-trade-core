@@ -228,8 +228,8 @@ export const getUserOffers = async (c: Context) => {
       },
       take: limit,
       skip: offeset,
-      orderBy:{
-        ts:'desc'
+      orderBy: {
+        ts: 'desc'
       }
     });
 
@@ -252,8 +252,8 @@ export const getUserOffers = async (c: Context) => {
           where: { created_by: userAddr }, // only his orders
         },
       },
-      orderBy:{
-        ts:'desc'
+      orderBy: {
+        ts: 'desc'
       }
     });
 

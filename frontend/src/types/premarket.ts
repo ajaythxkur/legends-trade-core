@@ -6,8 +6,6 @@ export interface Token {
     twitter?: String
     telegram?: String
     settle_duration: BigInt
-    // temp_starts_at?: Date
-    // temp_ends_at?: Date
     temp_starts_at?: BigInt
     temp_ends_at?: BigInt
     settle_started_at?: BigInt
@@ -25,7 +23,7 @@ export interface Token {
     vol24h: number;
     priceChange: number;
     cross_chain_address: string;
-    lastPriceUSD:number
+    lastPriceUSD: number
 }
 
 export interface TokenOffers {
