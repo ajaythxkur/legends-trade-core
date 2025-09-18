@@ -14,11 +14,14 @@ import { Badge } from '@/components/ui/badge';
 import { IoCloseOutline } from 'react-icons/io5';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { H1, H4 } from '@/components/ui/typography';
+import { testnetTokens } from '@/cross-chain-core';
+import { useApp } from '@/contexts/AppProvider';
 
 interface BodyProps {
     tokenAddr: string;
 }
 export default function Body({ tokenAddr }: BodyProps) {
+    const { sourceChain } = useApp()
     const { account } = useWallet();
     const [isBuy, setIsBuy] = useState(true);
     const [fillType, setFillType] = useState<string>('all')
@@ -30,6 +33,13 @@ export default function Body({ tokenAddr }: BodyProps) {
     const [totaloffers, setTotalOffers] = useState(0)
     const [myoffers, setMyOffers] = useState(0)
     const [totalOrders, setTotalOrders] = useState(0)
+    const collateralTokens = sourceChain ? testnetTokens[sourceChain] : testnetTokens['Aptos'];
+
+    const tokenMap = collateralTokens.reduce((acc, token) => {
+        acc[token.tokenId.address] = token.symbol;
+        return acc;
+    }, {} as Record<string, string>);
+
     const getTokenInfo = async () => {
         try {
             const response = await backendApi.getTokenInfo(tokenAddr)
@@ -61,8 +71,6 @@ export default function Body({ tokenAddr }: BodyProps) {
     useEffect(() => {
         getOffers();
     }, [getOffers])
-
-
 
     if (!tokenInfo) return <SpinnerLoading />
     return (
@@ -104,7 +112,15 @@ export default function Body({ tokenAddr }: BodyProps) {
                                         </TabsList>
                                         <div className="hidden badges lg:flex gap-4 items-center mt-6">
                                             {fillType !== 'all' &&
-                                                <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setFillType('all')}>{fillType}<IoCloseOutline className="w-5 h-5" /></Badge>
+                                                <Badge variant="outline" className="flex items-center gap-2 capitalize cursor-pointer" onClick={() => setFillType('all')}>{fillType}<IoCloseOutline className="w-5 h-5" /></Badge>
+                                            }
+
+                                            {collateral !== 'all' &&
+                                                <Badge variant="outline" className="flex items-center gap-2 capitalize cursor-pointer" onClick={() => setCollateral('all')}>
+                                                    {/* {collateral} */}
+                                                    {tokenMap[collateral] ?? collateral}
+                                                    <IoCloseOutline className="w-5 h-5" />
+                                                </Badge>
                                             }
                                         </div>
                                     </div>

@@ -16,6 +16,8 @@ import {
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { collateral_assets } from "@/utils/constants";
+import { testnetTokens } from "@/cross-chain-core";
+import { useApp } from "@/contexts/AppProvider";
 
 interface FilterProps {
     fillType: string;
@@ -97,6 +99,8 @@ const MobileFilter = ({ fillType, setFillType, collateral, setCollateral }: Filt
 
 const DesktopFilter = ({ fillType, setFillType, collateral, setCollateral }: FilterProps) => {
     const fillTypes = ['all', 'partial', 'full']
+    const {sourceChain} = useApp()
+    const collateralTokens = sourceChain ? testnetTokens[sourceChain] : testnetTokens["Aptos"];
     return (
         <>
             <div className="flex items-center gap-4">
@@ -105,6 +109,22 @@ const DesktopFilter = ({ fillType, setFillType, collateral, setCollateral }: Fil
                         Collateral  <IoIosArrowDown className='ms-2' />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => setCollateral('all')} className={`${collateral === 'all' ? 'bg-primary-button-color text-action-text-color' : ''} `}>All</DropdownMenuItem>
+                        {
+                            collateralTokens.map((collateralitem, i) => {
+                                return (
+                                    <DropdownMenuItem
+                                        key={i}
+                                        onClick={() => setCollateral(collateralitem.tokenId.address)}
+                                        className={`${collateral === collateralitem.tokenId.address ? 'bg-primary-button-color text-action-text-color' : ''} `}
+                                    >
+                                        {collateralitem.symbol}
+                                    </DropdownMenuItem>
+                                )
+                            })
+                        }
+                    </DropdownMenuContent>
+                    {/* <DropdownMenuContent>
                         <DropdownMenuItem onClick={() => setCollateral('all')} className={`${collateral === 'all' ? 'bg-primary-button-color text-action-text-color' : ''} `}>All</DropdownMenuItem>
                         {
                             collateral_assets.map((collateralitem, i) => {
@@ -119,7 +139,7 @@ const DesktopFilter = ({ fillType, setFillType, collateral, setCollateral }: Fil
                                 )
                             })
                         }
-                    </DropdownMenuContent>
+                    </DropdownMenuContent> */}
                 </DropdownMenu>
 
                 <DropdownMenu>

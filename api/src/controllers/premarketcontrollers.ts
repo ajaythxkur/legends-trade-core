@@ -103,10 +103,80 @@ export const getTokens = async (c: Context) => {
     }
 };
 
+// // get token information
+// export const getTokenInfo = async (c: Context) => {
+//     try {
+//         const { addr } = c.req.param();
+//         const tokens = await prisma.premarketToken.findMany({
+//             where: {
+//                 token_addr: addr
+//             },
+//             include: {
+//                 offers: {
+//                     orderBy: {
+//                         ts: 'desc'
+//                     }
+//                 }
+//             }
+//         });
+
+//         // Calculate 24 hours ago timestamp
+//         // const twentyFourHoursAgo = BigInt(Date.now() - 24 * 60 * 60 * 1000);
+//         const twentyFourHoursAgo = BigInt(Math.floor(Date.now() / 1000) - 24 * 60 * 60);
+
+//         const tokensWithMetrics = tokens.map(token => {
+//             const { offers, ...tokenData } = token;
+
+//             // Last price (latest offer)
+//             const lastPrice = offers.length > 0 ? offers[0].price : BigInt(0);
+
+//             // Previous price (second latest offer, if exists)
+//             const prevPrice = offers.length > 1 ? offers[1].price : BigInt(0);
+
+//             // Price change %
+//             let priceChange = 0;
+//             if (prevPrice > 0n) {
+//                 const diff = Number(lastPrice - prevPrice);
+//                 priceChange = (diff / Number(prevPrice)) * 100;
+//             }
+
+//             // Total volume (all time)
+//             const totalVolume = offers.reduce((sum, offer) => {
+//                 return sum + BigInt(Number(offer.amount) / 10000 * Number(offer.price));
+//             }, BigInt(0));
+
+//             // 24h volume
+//             const twentyFourHourVolume = offers
+//                 .filter(offer => offer.ts >= twentyFourHoursAgo)
+//                 .reduce((sum, offer) => {
+//                     return sum + BigInt(Number(offer.amount) / 10000 * Number(offer.price));
+//                 }, BigInt(0));
+
+//             return {
+//                 ...tokenData,
+//                 lastPrice,
+//                 volAll: totalVolume,
+//                 vol24h: twentyFourHourVolume,
+//                 priceChange,
+//             };
+//         });
+
+//         return c.json(serialize(tokensWithMetrics), 200);
+//     } catch (error) {
+//         console.error("Error fetching tokens:", error);
+//         return c.json({ error: "Failed to fetch tokens" }, 500);
+//     }
+// };
+
 // get token information
 export const getTokenInfo = async (c: Context) => {
     try {
         const { addr } = c.req.param();
+
+        // Get current prices (you might want to fetch these from an oracle or API)
+        const aptPrice = 4.3; // USD
+        const usdcPrice = 1.0; // USD (assuming USDC is pegged to $1)
+
         const tokens = await prisma.premarketToken.findMany({
             where: {
                 token_addr: addr
@@ -120,44 +190,69 @@ export const getTokenInfo = async (c: Context) => {
             }
         });
 
-        // Calculate 24 hours ago timestamp
-        // const twentyFourHoursAgo = BigInt(Date.now() - 24 * 60 * 60 * 1000);
         const twentyFourHoursAgo = BigInt(Math.floor(Date.now() / 1000) - 24 * 60 * 60);
 
         const tokensWithMetrics = tokens.map(token => {
             const { offers, ...tokenData } = token;
 
-            // Last price (latest offer)
-            const lastPrice = offers.length > 0 ? offers[0].price : BigInt(0);
+            // Helper function to convert price to USD based on collateral type
+            const convertToUSD = (price: bigint, collateralType: string): number => {
+                const priceInCollateral = Number(price) / Math.pow(10, 8);
 
-            // Previous price (second latest offer, if exists)
-            const prevPrice = offers.length > 1 ? offers[1].price : BigInt(0);
+                switch (collateralType?.toLowerCase()) {
+                    case '0x000000000000000000000000000000000000000000000000000000000000000a':
+                        return priceInCollateral * aptPrice;
+                    case '0x69091fbab5f7d635ee7ac5098cf0c1efbe31d68fec0f2cd565e8d168daf52832':
+                        return priceInCollateral * usdcPrice;
+                    default:
+                        // Default to APT if collateral type is not specified
+                        return priceInCollateral * aptPrice;
+                }
+            };
 
-            // Price change %
+            // Get last offer with collateral info
+            const lastOffer = offers.length > 0 ? offers[0] : null;
+            const lastPrice = lastOffer ? lastOffer.price : BigInt(0);
+            const lastPriceUSD = lastOffer ? convertToUSD(lastPrice, lastOffer.collateral_asset) : 0;
+
+            // Get previous offer for price change calculation
+            const prevOffer = offers.length > 1 ? offers[1] : null;
+            const prevPrice = prevOffer ? prevOffer.price : BigInt(0);
+            const prevPriceUSD = prevOffer ? convertToUSD(prevPrice, prevOffer.collateral_asset) : 0;
+
+            // Price change % (in USD terms for consistency)
             let priceChange = 0;
-            if (prevPrice > 0n) {
-                const diff = Number(lastPrice - prevPrice);
-                priceChange = (diff / Number(prevPrice)) * 100;
+            if (prevPriceUSD > 0) {
+                priceChange = ((lastPriceUSD - prevPriceUSD) / prevPriceUSD) * 100;
             }
 
-            // Total volume (all time)
+            // Total volume (all time) in USD
             const totalVolume = offers.reduce((sum, offer) => {
-                return sum + BigInt(Number(offer.amount) / 10000 * Number(offer.price));
-            }, BigInt(0));
+                const offerValue = (Number(offer.amount) / 10000) * convertToUSD(offer.price, offer.collateral_asset);
+                return sum + offerValue;
+            }, 0);
 
-            // 24h volume
+            // 24h volume in USD
             const twentyFourHourVolume = offers
                 .filter(offer => offer.ts >= twentyFourHoursAgo)
                 .reduce((sum, offer) => {
-                    return sum + BigInt(Number(offer.amount) / 10000 * Number(offer.price));
-                }, BigInt(0));
+                    const offerValue = (Number(offer.amount) / 10000) * convertToUSD(offer.price, offer.collateral_asset);
+                    return sum + offerValue;
+                }, 0);
 
             return {
                 ...tokenData,
-                lastPrice,
-                volAll: totalVolume,
-                vol24h: twentyFourHourVolume,
-                priceChange,
+                lastPrice: lastPrice, // Raw price in original collateral
+                lastPriceUSD: Math.round(lastPriceUSD * 100) / 100, // Price in USD
+                lastPriceCollateral: lastOffer?.collateral_asset || 'apt', // Which collateral was used
+                volAll: Math.round(totalVolume * 100) / 100, // Volume in USD
+                vol24h: Math.round(twentyFourHourVolume * 100) / 100, // 24h volume in USD
+                priceChange: Math.round(priceChange * 100) / 100, // Price change %
+                // Additional pricing info
+                currentPrices: {
+                    apt: aptPrice,
+                    usdc: usdcPrice
+                }
             };
         });
 
@@ -208,6 +303,9 @@ export const getOffers = async (c: Context) => {
             },
             take: Number(limit),
             skip: Number(offset) * Number(limit),
+            orderBy: {
+                ts: "desc",
+            },
         });
 
         const totalOffers = await prisma.premarketOffer.count({

@@ -11,8 +11,9 @@ import { BalanceProvider } from "@/contexts/BalanceContext";
 import { NETWORK } from "@/utils/env";
 import WalletContextProvider from "@/contexts/WalletProvider";
 
-// const font = League_Spartan({ subsets: ["latin"], weight: "500" });
-import { Inter } from "@/components/fonts";
+import { Inter } from 'next/font/google'
+const font = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+// import { Inter } from "@/components/fonts";
 
 export const metadata: Metadata = {
   title: "Legends Trade",
@@ -26,7 +27,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${Inter.className}`} >
+      {/* <body className={`${Inter.className}`} > */}
+      <body className={`${font.className}`} >
         <ThemeProvider>
           <AutoConnectProvider>
             <WalletProvider>
@@ -54,7 +56,7 @@ export default function RootLayout({
               fontSize: "12px"
             },
             classNames: {
-              toast: Inter.className,
+              toast: font.className,
             }
           }}
         />

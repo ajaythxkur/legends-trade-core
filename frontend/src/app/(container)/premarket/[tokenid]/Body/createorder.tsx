@@ -65,7 +65,8 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
 
     const [sliderValue, setSliderValue] = useState(0) // percentage (0 → 100)
     const maxAmount = amount - filled_amount;
-    const currentCount = Math.round((sliderValue / 100) * maxAmount)
+    // const currentCount = Math.round((sliderValue / 100) * maxAmount)
+    const currentCount = (sliderValue / 100) * maxAmount
     const [combinedUsdcBalance, setCombinedUsdcBalance] = useState<string>("");
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -81,9 +82,12 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
 
     const handleSliderChange = (val: number[]) => {
         const percent = val[0]
+        // setSliderValue(percent)
+        // setDesiredAmount(Math.round((percent / 100) * maxAmount).toString())
+        // setCollateralAmount((Number(desiredAmount) * price) / collTokenPrice)
         setSliderValue(percent)
-        setDesiredAmount(Math.round((percent / 100) * maxAmount).toString())
-        setCollateralAmount((Number(desiredAmount) * price) / collTokenPrice) // 4.3 is apt price static
+        setDesiredAmount(((percent / 100) * maxAmount).toFixed(3).toString())
+        setCollateralAmount((Number(desiredAmount) * price) / collTokenPrice)
     }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -315,16 +319,17 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
                     <div className="mt-4">
                         <div className="flex justify-between items-center">
                             <PExtraSmall>Select desired amount</PExtraSmall>
+                            {/* <PExtraSmall>{currentCount.toLocaleString()} {token.symbol}</PExtraSmall> */}
                             <PExtraSmall>{currentCount.toLocaleString()} {token.symbol}</PExtraSmall>
                         </div>
 
                         <Slider
+                            min={0}
+                            max={100}
+                            step={0.1}
+                            className="w-full mt-3"
                             value={[sliderValue]}
                             onValueChange={handleSliderChange}
-                            max={100}
-                            // step={1}
-                            step={0.001}
-                            className="w-full mt-3"
                         />
 
                         <div className="flex justify-between text-xs text-gray-500 mt-3">

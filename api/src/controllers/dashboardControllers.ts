@@ -228,6 +228,9 @@ export const getUserOffers = async (c: Context) => {
       },
       take: limit,
       skip: offeset,
+      orderBy:{
+        ts:'desc'
+      }
     });
 
     const userCreatedOffersWithFlag = userCreatedOffers.map((offer) => ({
@@ -249,6 +252,9 @@ export const getUserOffers = async (c: Context) => {
           where: { created_by: userAddr }, // only his orders
         },
       },
+      orderBy:{
+        ts:'desc'
+      }
     });
 
     const userOrdersOnOtherOffersWithFlag = userOrdersOnOtherOffers.map(

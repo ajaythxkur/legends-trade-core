@@ -25,6 +25,7 @@ export interface Token {
     vol24h: number;
     priceChange: number;
     cross_chain_address: string;
+    lastPriceUSD:number
 }
 
 export interface TokenOffers {

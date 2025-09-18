@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { H4, H5, PExtraSmall, PMedium, PSmall } from '@/components/ui/typography';
+import { H1, H4, H5, PExtraSmall, PMedium, PSmall } from '@/components/ui/typography';
 import { FaXTwitter } from 'react-icons/fa6';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -20,11 +20,12 @@ import PaginationNew from '@/components/Pagination';
 import { chainIcons } from '@/utils/constants';
 import { useApp } from '@/contexts/AppProvider';
 import { testnetTokens } from '@/cross-chain-core';
+import { IoCloseOutline } from 'react-icons/io5';
+import { Inbox } from 'lucide-react';
 dayjs.extend(duration);
 
 export default function Body({ id }: { id: string }) {
     const { account, isLoading } = useWallet();
-    const { sourceChain, tokenPrices } = useApp();
 
     const [tokenInfo, setTokenInfo] = useState<Token>();
     const [offers, setoffers] = useState<TokenOffers[]>([])
@@ -72,7 +73,6 @@ export default function Body({ id }: { id: string }) {
     const aptPrice = 4.3; //in used
     const lastprice = (tokenInfo.lastPrice / Math.pow(10, 8)) * aptPrice;
     const formatLastPrice = Math.round(lastprice * 100) / 100;
-
     const vol24h = (tokenInfo.vol24h / Math.pow(10, 8)) * aptPrice;
     const totalVolume = (tokenInfo.volAll / Math.pow(10, 8)) * aptPrice;
 
@@ -179,12 +179,37 @@ export default function Body({ id }: { id: string }) {
                     setOfferStatus={setOfferStatus}
                 />
             </div>
+            <div className="flex items-center mt-4 gap-4">
+                {offerType !== 'all' &&
+                    <Badge variant="outline" className="flex items-center gap-2 capitalize cursor-pointer" onClick={() => setOfferType('all')}>
+                        {offerType}
+                        <IoCloseOutline className="w-5 h-5" />
+                    </Badge>
+                }
+                {offerStatus !== 'all' &&
+                    <Badge variant="outline" className="flex items-center gap-2 capitalize cursor-pointer" onClick={() => setOfferStatus('all')}>
+                        {offerStatus}
+                        <IoCloseOutline className="w-5 h-5" />
+                    </Badge>
+                }
+            </div>
 
             {/* Trades table */}
-            <div className="mt-6">
-                <Offers offers={offers} tokenInfo={tokenInfo} />
-                <PaginationNew offset={offset} setOffset={setOffset} loading={loading} total={total} />
-            </div>
+            {
+                offers.length === 0 ?
+                    <div className="mt-4 text-center text-action-text-color rounded-2xl bg-card-bg shwdow inset-0 flex items-center justify-center py-24">
+                        <div>
+                            <Inbox className="h-20 w-20 m-auto text-tag-stroke-color" />
+                            <H1 className="mt-6">No Offers Found.</H1>
+                        </div>
+                    </div>
+                    :
+                    <div className="mt-6">
+                        <Offers offers={offers} tokenInfo={tokenInfo} />
+                        <PaginationNew offset={offset} setOffset={setOffset} loading={loading} total={total} />
+                    </div>
+            }
+
         </>
     )
 }

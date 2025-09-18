@@ -15,7 +15,9 @@ interface TokenInfoProps {
 
 export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
 
-    const lastprice = formatPrice(tokenInfo.lastPrice);
+    // const lastprice = formatPrice(tokenInfo.lastPrice);
+    const lastprice = (tokenInfo.lastPrice / Math.pow(10, 8)) * 4.3;
+    const formatlastPrice = Math.round(lastprice * 100) / 100;
     // const price = (Number(tokenInfo.lastPrice) / Math.pow(10, Number(collateralToken?.decimals))) * collTokenPrice;
 
     const vol24h = formatPrice(tokenInfo.vol24h);
@@ -38,7 +40,7 @@ export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
 
             <div className="text-center">
                 <div className="flex items-center gap-2">
-                    <H6>$ {lastprice}</H6>
+                    <H6>$ {formatlastPrice}</H6>
                     {
                         tokenInfo.priceChange > 0 ?
                             <Badge variant="positive">+ {tokenInfo.priceChange.toFixed(2)}%</Badge>

@@ -19,6 +19,12 @@ export default function Body() {
     const [isLoading, setisLoading] = useState(false);
     const [debounce, setDebounce] = useState('')
 
+    const networkNames: Record<number, string> = {
+        0: "Aptos",
+        1: "Solana",
+        2: "Ethereum",
+    };
+
     const getTokens = useCallback(async () => {
         try {
             setisLoading(true);
@@ -63,7 +69,8 @@ export default function Body() {
             <div className="flex gap-4 items-center mt-4">
                 {network !== 4 &&
                     <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setNetwork(4)}>
-                        {network}<IoCloseOutline className="w-5 h-5" />
+                        {networkNames[network] ?? "All"}
+                        <IoCloseOutline className="w-5 h-5" />
                     </Badge>
                 }
             </div>

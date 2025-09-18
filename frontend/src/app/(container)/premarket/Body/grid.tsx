@@ -27,14 +27,19 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
 
     if (loading || isLoading) return <PremarketSkeletons />
     if (tokens.length === 0) return <Empty title="Tokens not found." />
-    
+
     return (
         <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6 mt-6 items-start">
                 {tokens.map((token, index) => {
-                    const lastprice = formatPrice(token.lastPrice);
-                    const vol24h = formatPrice(token.vol24h);
-                    const totalVolume = formatPrice(token.volAll);
+                    // const lastprice = formatPrice(token.lastPrice);
+                    // const vol24h = formatPrice(token.vol24h);
+                    // const totalVolume = formatPrice(token.volAll);
+                    const lastprice = (token.lastPrice / Math.pow(10, 8)) * 4.3;
+                    const formatlastPrice = Math.round(lastprice * 100) / 100;
+                    const vol24h = (token.vol24h / Math.pow(10, 8)) * 4.3;
+                    const totalVolume = (token.volAll / Math.pow(10, 8)) * 4.3;
+
                     const startsAt = formatDateTime(Number(token.temp_starts_at));
                     const endsAt = formatDateTime(Number(token.temp_ends_at));
 
@@ -66,7 +71,7 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
                             <div className="flex justify-between items-center">
                                 <PSmall className="text-sm text-tertiary-text-color">Last Price</PSmall>
                                 <div className="flex gap-2 items-center flex-wrap justify-end">
-                                    <H6 className="font-semibold text-primary-text-color">$ {lastprice}</H6>
+                                    <H6 className="font-semibold text-primary-text-color">$ {formatlastPrice}</H6>
                                     {/* <Badge variant="positive">+ 3.2%</Badge> */}
                                     {
                                         token.priceChange > 0 ?
@@ -80,14 +85,14 @@ export default function TokensGrid({ tokens, loading }: TokenGridProps) {
                             <div className="flex justify-between items-center">
                                 <PSmall className="text-sm text-tertiary-text-color">24 hr Vol</PSmall>
                                 <div className="flex gap-2 items-center flex-wrap justify-end">
-                                    <PLarge className="font-medium text-secondary-text-color">$ {vol24h.toFixed(4)}</PLarge>
+                                    <PLarge className="font-medium text-secondary-text-color">$ {vol24h.toFixed(2)}</PLarge>
                                     {/* <Badge variant="negative">+ 3.2%</Badge> */}
                                 </div>
                             </div>
                             <div className="flex justify-between items-center mb-0">
                                 <PSmall className="text-sm text-tertiary-text-color">Total volume</PSmall>
                                 <div className="flex gap-2 items-center flex-wrap justify-end">
-                                    <PLarge className="font-medium text-secondary-text-color">$ {totalVolume.toFixed(4)}</PLarge>
+                                    <PLarge className="font-medium text-secondary-text-color">$ {totalVolume.toFixed(2)}</PLarge>
                                     {/* <Badge variant="positive">+ 3.2%</Badge> */}
                                 </div>
                             </div>
