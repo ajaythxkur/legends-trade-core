@@ -2,7 +2,7 @@
 import { P, PExtraSmall, PLarge, PSmall } from "@/components/ui/typography";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PointsSvg, PremarketSvg } from "@/components/icons/icons";
+import { PremarketSvg } from "@/components/icons/icons";
 import { Badge } from "@/components/ui/badge";
 import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,43 +27,46 @@ interface DashTabsProps {
 }
 export default function DashTabs({ tokens, total, offset, setOffset, loading, tokenStatus, setTokenStatus }: DashTabsProps) {
     const tokenstatus = ['all', 'ended', 'not-started', 'ongoing'];
+    const [currentTab, setCurrentTab] = useState(1)
     return (
         <Tabs defaultValue="premarket" className="mt-6 lg:mt-8 xl:mt-10 2xl:mt-12">
             <div className="flex flex-wrap md:flex-nowarp justify-between items-center gap-4">
                 <TabsList>
-                    <TabsTrigger value="premarket">PreMarket</TabsTrigger>
-                    <TabsTrigger value="points">Points</TabsTrigger>
-                    <TabsTrigger value="launchpad">Launchpad</TabsTrigger>
+                    <TabsTrigger value="premarket" onClick={() => setCurrentTab(1)}>PreMarket</TabsTrigger>
+                    <TabsTrigger value="points" onClick={() => setCurrentTab(2)}>Points</TabsTrigger>
+                    <TabsTrigger value="launchpad" onClick={() => setCurrentTab(3)}>Launchpad</TabsTrigger>
                 </TabsList>
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger className="py-2.5 md:py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
-                        Status<IoIosArrowDown className='ms-2' />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuLabel>Type </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {
-                            tokenstatus.map((t, i) => {
-                                return (
-                                    <DropdownMenuItem
-                                        key={i}
-                                        onClick={() => setTokenStatus(t)}
-                                        className={`capitalize ${tokenStatus === t ? 'bg-primary-button-color text-action-text-color' : ''} `}
-                                    >
-                                        {t}
-                                    </DropdownMenuItem>
-                                )
-                            })
-                        }
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-            <div className="badges lg:flex gap-4 items-center mt-4">
-                {tokenStatus !== 'all' &&
-                    <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setTokenStatus('all')}>{tokenStatus}<IoCloseOutline className="w-5 h-5" /></Badge>
+                {currentTab === 1 &&
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="py-2.5 md:py-3.5 px-4 bg-secondary-button-color text-action-text-color rounded flex items-center border-0 focus:outline-none cursor-pointer">
+                            Status<IoIosArrowDown className='ms-2' />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuLabel>Type </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {
+                                tokenstatus.map((t, i) => {
+                                    return (
+                                        <DropdownMenuItem
+                                            key={i}
+                                            onClick={() => setTokenStatus(t)}
+                                            className={`capitalize ${tokenStatus === t ? 'bg-primary-button-color text-action-text-color' : ''} `}
+                                        >
+                                            {t}
+                                        </DropdownMenuItem>
+                                    )
+                                })
+                            }
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 }
             </div>
+            {tokenStatus !== 'all' &&
+                <div className="badges lg:flex gap-4 items-center mt-4">
+                    <Badge variant="outline" className="flex items-center gap-2 capitalize" onClick={() => setTokenStatus('all')}>{tokenStatus}<IoCloseOutline className="w-5 h-5" /></Badge>
+                </div>
+            }
 
 
             {/* Premarket tab content */}
@@ -139,7 +142,7 @@ export default function DashTabs({ tokens, total, offset, setOffset, loading, to
 
             {/* Points tab content */}
             <TabsContent value="points" className="mt-8">
-                <Empty title="coming soon" />
+                <Empty title="Coming Soon" />
             </TabsContent>
 
             {/* Launchpad tab content */}

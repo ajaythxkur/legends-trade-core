@@ -6,7 +6,7 @@ import { IoIosArrowForward } from "react-icons/io"
 import TradesDrawer from "./tradesdrawer";
 import CircularProgress from "@/components/ui/circular-progress";
 import { Token, TokenOffers } from "@/types/premarket";
-import { P, PExtraSmall, PMedium } from "@/components/ui/typography";
+import { PExtraSmall, PMedium } from "@/components/ui/typography";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useApp } from "@/contexts/AppProvider";
 import { testnetTokens } from "@/cross-chain-core";

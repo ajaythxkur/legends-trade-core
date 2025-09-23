@@ -1,7 +1,6 @@
 "use client"
 import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react"
-import { Account, MintLayout, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction, createInitializeMintInstruction, createMint, createMintToInstruction, getAssociatedTokenAddress, getMinimumBalanceForRentExemptMint, getMint } from "@solana/spl-token"
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { MintLayout, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction, createInitializeMintInstruction, createMintToInstruction, getAssociatedTokenAddress, getMinimumBalanceForRentExemptMint, getMint } from "@solana/spl-token"
 import { useState } from "react";
 import { toast } from "sonner";
 import { web3 } from "@coral-xyz/anchor";

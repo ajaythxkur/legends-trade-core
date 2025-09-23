@@ -58,6 +58,9 @@ export const getTokens = async (c: Context) => {
             // Previous price (second latest offer, if exists)
             const prevPrice = offers.length > 1 ? offers[1].price : BigInt(0);
 
+            // last offer collateral
+            const lastPriceCollateral = offers.length > 0 ? offers[0].collateral_asset : null;
+
             // Price change %
             let priceChange = 0;
             if (prevPrice > 0n) {
@@ -83,11 +86,10 @@ export const getTokens = async (c: Context) => {
                 volAll: totalVolume,
                 vol24h: twentyFourHourVolume,
                 priceChange,
+                lastPriceCollateral,
             };
         });
 
-        // const totaltokens = await prisma.premarketToken.findMany()
-        // const totalpages = Math.ceil(totaltokens.length / limit);
         const totaltokens = await prisma.premarketToken.count()
         const totalpages = Math.ceil(totaltokens / limit);
         console.log(`pages: ${totalpages}`)
@@ -95,6 +97,7 @@ export const getTokens = async (c: Context) => {
             data: serialize(tokensWithMetrics),
             count: totalpages
         };
+
 
         return c.json(result, 200);
     } catch (error) {
@@ -133,6 +136,10 @@ export const getTokenInfo = async (c: Context) => {
             // Previous price (second latest offer, if exists)
             const prevPrice = offers.length > 1 ? offers[1].price : BigInt(0);
 
+            // offerCollateral 
+            // const lastPriceCollateral = offers[0].collateral_asset ?? null
+            const lastPriceCollateral = offers.length > 0 ? offers[0].collateral_asset : null;
+
             // Price change %
             let priceChange = 0;
             if (prevPrice > 0n) {
@@ -141,23 +148,55 @@ export const getTokenInfo = async (c: Context) => {
             }
 
             // Total volume (all time)
-            const totalVolume = offers.reduce((sum, offer) => {
+            const volAll = offers.reduce((sum, offer) => {
                 return sum + BigInt(Number(offer.amount) / 10000 * Number(offer.price));
             }, BigInt(0));
 
+            // Split volumes by collateral
+            let volUSDC = BigInt(0);
+            let volAPT = BigInt(0);
+
+            for (const offer of offers) {
+                const tradeValue = BigInt(Number(offer.amount) / 10000 * Number(offer.price));
+
+                if (offer.collateral_asset === process.env.USDC_COLL) {
+                    volUSDC += tradeValue;
+                } else if (offer.collateral_asset === process.env.APT_COLL) {
+                    volAPT += tradeValue;
+                }
+            }
+
+            // Total across all collaterals
+            console.log(volUSDC, volAPT);
+            const usdcvolInusd = Number(volAPT) / Math.pow(10, 8) * 4.57;
+            const aptvolInUsd = Number(volUSDC) / Math.pow(10, 6) * 1
+
+            const totalVolume = usdcvolInusd + aptvolInUsd
+
             // 24h volume
-            const twentyFourHourVolume = offers
+            const vol24h = offers
                 .filter(offer => offer.ts >= twentyFourHoursAgo)
                 .reduce((sum, offer) => {
                     return sum + BigInt(Number(offer.amount) / 10000 * Number(offer.price));
                 }, BigInt(0));
 
+            // 24h volume change %
+            let vol24hChange = 0;
+            if (vol24h > 0n) {
+                const diff = Number(volAll - vol24h);
+                vol24hChange = (diff / Number(vol24h)) * 100;
+            }
+
             return {
                 ...tokenData,
                 lastPrice,
+                // volAll: volAll,
                 volAll: totalVolume,
-                vol24h: twentyFourHourVolume,
+                vol24h: vol24h,
+                vol24hChange: vol24hChange,
                 priceChange,
+                lastPriceCollateral: lastPriceCollateral,
+
             };
         });
 
@@ -169,19 +208,84 @@ export const getTokenInfo = async (c: Context) => {
 };
 
 // get Offers
+// export const getOffers = async (c: Context) => {
+//     try {
+//         const { addr } = c.req.param();
+//         const { userAddr, filltype, collateral, is_buy, limit, offset } = c.req.query();
+//         // const currenttoken = await prisma.premarketToken.findUnique({
+//         //     where: {
+//         //         token_addr: addr,
+//         //         status: { in: [1, 3] }
+//         //     }
+//         // })
+//         // if (currenttoken) {
+//         //     userAddr = 'all'
+//         // }
+
+//         const offers = await prisma.premarketOffer.findMany({
+//             where: {
+//                 token_addr: addr,
+//                 is_active: true,
+//                 NOT: {
+//                     filled_amount: { equals: prisma.premarketOffer.fields.amount }
+//                 },
+
+//                 ...(is_buy !== undefined ? { is_buy: is_buy === "false" } : {}),
+//                 AND: [
+//                     filltype && filltype !== "all"
+//                         ? { is_full_match: filltype === "full" }
+//                         : {},
+
+//                     collateral && collateral != 'all' ?
+//                         { collateral_asset: collateral }
+//                         :
+//                         {},
+//                     // userAddr && userAddr !== ''
+//                     //     ? { created_by: { not: userAddr } }
+//                     //     : {}
+//                 ],
+//             },
+//             take: Number(limit),
+//             skip: Number(offset) * Number(limit),
+//             orderBy: {
+//                 ts: "desc",
+//             },
+//         });
+
+//         const totalOffers = await prisma.premarketOffer.count({
+//             where: { token_addr: addr }
+//         });
+
+//         const myOffers = userAddr
+//             ? await prisma.premarketOffer.count({
+//                 where: {
+//                     token_addr: addr,
+//                     created_by: userAddr,
+//                 },
+//             })
+//             : 0;
+
+//         const totalOrders = await prisma.premarketOrder.count({
+//             where: { token_addr: addr }
+//         });
+
+//         return c.json(serialize({
+//             offers: offers,
+//             totalOffers: totalOffers,
+//             myOffers: myOffers,
+//             totalOrders: totalOrders
+//         }), 200);
+//     } catch (error) {
+//         console.error(error);
+//         return c.json({ error: "Failed to fetch offers" }, 500);
+//     }
+// };
+
+
 export const getOffers = async (c: Context) => {
     try {
         const { addr } = c.req.param();
         const { userAddr, filltype, collateral, is_buy, limit, offset } = c.req.query();
-        // const currenttoken = await prisma.premarketToken.findUnique({
-        //     where: {
-        //         token_addr: addr,
-        //         status: { in: [1, 3] }
-        //     }
-        // })
-        // if (currenttoken) {
-        //     userAddr = 'all'
-        // }
 
         const offers = await prisma.premarketOffer.findMany({
             where: {
@@ -201,9 +305,6 @@ export const getOffers = async (c: Context) => {
                         { collateral_asset: collateral }
                         :
                         {},
-                    // userAddr && userAddr !== ''
-                    //     ? { created_by: { not: userAddr } }
-                    //     : {}
                 ],
             },
             take: Number(limit),
@@ -213,9 +314,22 @@ export const getOffers = async (c: Context) => {
             },
         });
 
-        const totalOffers = await prisma.premarketOffer.count({
-            where: { token_addr: addr }
+        const totalBuyOffers = await prisma.premarketOffer.count({
+            where: {
+                token_addr: addr,
+                is_buy: true
+            }
         });
+
+        const totalSellOffers = await prisma.premarketOffer.count({
+            where: {
+                token_addr: addr,
+                is_buy: false
+            }
+        });
+        const totalOffers = totalBuyOffers + totalSellOffers;
+        const totalBuyPages = Math.ceil(totalBuyOffers / Number(limit));
+        const totalSellPages = Math.ceil(totalSellOffers / Number(limit));
 
         const myOffers = userAddr
             ? await prisma.premarketOffer.count({
@@ -233,6 +347,8 @@ export const getOffers = async (c: Context) => {
         return c.json(serialize({
             offers: offers,
             totalOffers: totalOffers,
+            totalBuyPages,
+            totalSellPages,
             myOffers: myOffers,
             totalOrders: totalOrders
         }), 200);
@@ -244,7 +360,6 @@ export const getOffers = async (c: Context) => {
 
 // ===========================================================================
 // ===========================================================================
-
 export const updateTokenData = async (c: Context) => {
     try {
         const addr = c.req.query('addr');

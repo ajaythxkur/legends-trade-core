@@ -26,6 +26,7 @@ dayjs.extend(duration);
 
 export default function Body({ id }: { id: string }) {
     const { account, isLoading } = useWallet();
+    const { sourceChain, tokenPrices } = useApp();
 
     const [tokenInfo, setTokenInfo] = useState<Token>();
     const [offers, setoffers] = useState<TokenOffers[]>([])
@@ -67,14 +68,38 @@ export default function Body({ id }: { id: string }) {
         getUserOffersData();
     }, [getUserOffersData])
 
+
+
     if (isLoading || !tokenInfo) return <SpinnerLoading />;
     if (!isLoading && !account) return <Empty title="Wallet not connected" />
 
-    const aptPrice = 4.3; //in used
-    const lastprice = (tokenInfo.lastPrice / Math.pow(10, 8)) * aptPrice;
+    // const aptPrice = 4.3; //in used
+    // const lastprice = (tokenInfo.lastPrice / Math.pow(10, 8)) * aptPrice;
+    // const formatLastPrice = Math.round(lastprice * 100) / 100;
+    // const vol24h = (tokenInfo.vol24h / Math.pow(10, 8)) * aptPrice;
+    // const totalVolume = (tokenInfo.volAll / Math.pow(10, 8)) * aptPrice;
+
+    const last_price_coll = tokenInfo.lastPriceCollateral;
+    console.log("coll", last_price_coll)
+    const collateralTokens = sourceChain ? testnetTokens[sourceChain] : testnetTokens["Aptos"]
+    const collateralToken = collateralTokens.find(
+        (coll) => coll.tokenId.address.toLowerCase() === last_price_coll.toLowerCase()
+    );
+    if (!collateralToken) {
+        console.warn(`No collateral found for ${last_price_coll}`);
+        return null;
+    }
+    if (!tokenPrices) {
+        console.warn("Token prices not loaded yet");
+        return null;
+    }
+    const collTokenPrice = tokenPrices[collateralToken.symbol] ?? 0;
+
+    const lastprice = (tokenInfo.lastPrice / Math.pow(10, Number(collateralToken?.decimals))) * collTokenPrice;
     const formatLastPrice = Math.round(lastprice * 100) / 100;
-    const vol24h = (tokenInfo.vol24h / Math.pow(10, 8)) * aptPrice;
-    const totalVolume = (tokenInfo.volAll / Math.pow(10, 8)) * aptPrice;
+
+    const vol24h = (tokenInfo.vol24h / Math.pow(10, 8)) * collTokenPrice;
+    // const totalVolume = (tokenInfo.volAll / Math.pow(10, 8)) * collTokenPrice;
 
     return (
         <>
@@ -110,7 +135,7 @@ export default function Body({ id }: { id: string }) {
                     {/* 24h Volume */}
                     <div className="text-center pt-4 md:pt-0">
                         <div className="flex items-center gap-2">
-                            <PMedium className="font-medium text-secondary-text-color">$ {vol24h.toFixed(4)}</PMedium>
+                            <PMedium className="font-medium text-secondary-text-color">$ {vol24h.toFixed(2)}</PMedium>
                             {/* <Badge variant="negative">+ 3.2%</Badge> */}
                         </div>
                         <PExtraSmall className="text-tertiary-text-color mt-2">24h Volume</PExtraSmall>
@@ -119,7 +144,8 @@ export default function Body({ id }: { id: string }) {
                     {/* Total Volume */}
                     <div className="text-center pt-4 md:pt-0">
                         <div className="flex items-center gap-2">
-                            <PMedium className="font-medium text-secondary-text-color">$ {totalVolume.toFixed(4)}</PMedium>
+                            {/* <PMedium className="font-medium text-secondary-text-color">$ {totalVolume.toFixed(2)}</PMedium> */}
+                            <PMedium className="font-medium text-secondary-text-color">$ {tokenInfo.volAll.toFixed(2)}</PMedium>
                             {/* <Badge variant="positive">+ 3.2%</Badge> */}
                         </div>
                         <PExtraSmall className="text-tertiary-text-color mt-2">Total Volume</PExtraSmall>

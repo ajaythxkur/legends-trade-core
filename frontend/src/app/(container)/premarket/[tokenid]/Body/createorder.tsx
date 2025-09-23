@@ -7,17 +7,14 @@ import Image from "next/image"
 import { Slider } from "@/components/ui/slider"
 import { PExtraSmall, PMedium, PSmall } from "@/components/ui/typography"
 import { RiArrowRightDoubleFill } from "react-icons/ri"
-import { LuWalletMinimal } from "react-icons/lu"
 import { useDrawer } from "@/contexts/DrawerContext"
 import { Badge } from "@/components/ui/badge"
 import { Token, TokenOffers } from "@/types/premarket"
-import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-react"
+import { useWallet } from "@aptos-labs/wallet-adapter-react"
 import { moduleAddress } from "@/utils/env"
 import aptosClient, { getTxnOnExplorer } from "@/lib/aptos"
 import { toast } from "sonner"
 import { useApp } from "@/contexts/AppProvider"
-// import { useUSDCBalance } from "@/contexts/USDCBalanceContext"
-// import { testnetTokens } from "@/cross-chain-core-old"
 import { InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk"
 import { IoCheckmark } from "react-icons/io5"
 import { WalletButton } from "@/components/wallet/WalletButton"
@@ -37,12 +34,11 @@ interface CreateOrderProps {
 }
 
 export default function CreateOrder({ type, token, amount, filled_amount, collateral, price, offer, collateral_fa, collTokenPrice }: CreateOrderProps) {
-    const { connected, account, signAndSubmitTransaction, wallet, signTransaction } = useWallet()
-    const { tokenPrices, sourceChain, originWalletDetails, provider, sponsorAccount } = useApp()
-    const { fetchAptosBalance, fetchOriginBalance, aptosBalance, originBalance, refetchBalancesWithDelay } = useBalance()
+    const { connected, account, signAndSubmitTransaction, signTransaction } = useWallet()
+    const { tokenPrices, sourceChain, sponsorAccount } = useApp()
+    const { fetchAptosBalance, aptosBalance, refetchBalancesWithDelay } = useBalance()
     const { network } = useWallet()
     const { closeDrawer } = useDrawer();
-    // const [desiredAmount, setDesiredAmount] = useState(0)
     const [desiredAmount, setDesiredAmount] = useState('')
     const [collateralAmount, setCollateralAmount] = useState<number>(collateral);
     console.log(collateral)
@@ -120,24 +116,6 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
             const collateral = Number(offer.price) / 10000;
             let hash = ""
             if (sourceChain !== "Aptos") {
-                // if (collateral > Number(aptosBalance)) {
-                //     const desiredAmount = collateral - Number(aptosBalance);
-                //     const quote = await provider?.getQuote({
-                //         amount: desiredAmount.toString(),
-                //         originChain: sourceChain,
-                //         type: "transfer",
-                //     });
-                //     console.log(quote, desiredAmount)
-                //     await provider.transfer({
-                //         sourceChain,
-                //         wallet,
-                //         destinationAddress: account?.address?.toString() ?? "",
-                //         mainSigner: sponsorAccount,
-                //         amount: desiredAmount.toString(),
-                //         sponsorAccount,
-                //     })
-                // };
-
                 const rawTransaction = await aptosClient.transaction.build.simple({
                     data: transactionData,
                     options: {
@@ -220,7 +198,7 @@ export default function CreateOrder({ type, token, amount, filled_amount, collat
     }, [collateralAmount, network, sourceChain, fetchAptosBalance, amount, price]);
 
     useEffect(() => {
-        let combinedBalance = aptosBalance ? Number(aptosBalance) : 0;
+        const combinedBalance = aptosBalance ? Number(aptosBalance) : 0;
         setCombinedUsdcBalance(combinedBalance.toString())
     }, [aptosBalance])
 

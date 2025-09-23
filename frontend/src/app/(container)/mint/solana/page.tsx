@@ -1,7 +1,6 @@
 "use client"
 import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react"
-import { Account, MintLayout, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction, createInitializeMintInstruction, createMint, createMintToInstruction, getAssociatedTokenAddress, getMinimumBalanceForRentExemptMint, getMint } from "@solana/spl-token"
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { MintLayout, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction, createInitializeMintInstruction, createMintToInstruction, getAssociatedTokenAddress, getMinimumBalanceForRentExemptMint, getMint } from "@solana/spl-token"
 import { useState } from "react";
 import { toast } from "sonner";
 import { web3 } from "@coral-xyz/anchor";
@@ -135,8 +134,8 @@ export default function MintToken() {
             <div className="container-fluid">
                 <div className="py-4">
                     <div
-                        className="p-6 w-full max-w-2xl mx-auto rounded-2xl text-center"
-                       style={{ boxShadow: "0 0 14px 0 #00000015 inset" }}
+                        className="p-6 w-full max-w-2xl mx-auto rounded-2xl text-center bg-bottom-layer-1"
+                        style={{ boxShadow: "0 0 14px 0 #00000015 inset" }}
                     >
                         <WalletMultiButton />
                         <H5 className="mt-4">Create Mint Token</H5>
@@ -156,8 +155,8 @@ export default function MintToken() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-center">
                     <div className="py-4">
                         <div
-                            className="p-6 w-full max-w-2xl mx-auto rounded-2xl"
-                           style={{ boxShadow: "0 0 14px 0 #00000015 inset" }}
+                            className="p-6 w-full max-w-2xl mx-auto rounded-2xl bg-bottom-layer-1"
+                            style={{ boxShadow: "0 0 14px 0 #00000015 inset" }}
                         >
                             <H5>Mint tokens</H5>
                             <form className="mt-4 space-y-5" onSubmit={onSubmit}>
@@ -165,7 +164,7 @@ export default function MintToken() {
                                     <PSmall>Mint (token address)</PSmall>
                                     <input
                                         type="text"
-                                        className="py-3 px-4 rounded-md bg-bottom-layer-1 text-input-field-text-color w-full focus:outline-none"
+                                        className="py-3 px-4 rounded-md bg-xl-card-bg text-input-field-text-color w-full focus:outline-none"
                                         name="mint"
                                         value={sendingMint}
                                         onChange={(e) => setSendingMint(e.target.value)}
@@ -176,7 +175,7 @@ export default function MintToken() {
                                     <PSmall>Receiver Address (user address)</PSmall>
                                     <input
                                         type="text"
-                                        className="py-3 px-4 rounded-md bg-bottom-layer-1 text-input-field-text-color w-full focus:outline-none"
+                                        className="py-3 px-4 rounded-md bg-xl-card-bg text-input-field-text-color w-full focus:outline-none"
                                         name="receiver"
                                         value={receiver}
                                         onChange={(e) => setReceiver(e.target.value)}
@@ -187,7 +186,7 @@ export default function MintToken() {
                                     <PSmall>Amount</PSmall>
                                     <input
                                         type="text"
-                                        className="py-3 px-4 rounded-md bg-bottom-layer-1 text-input-field-text-color w-full focus:outline-none"
+                                        className="py-3 px-4 rounded-md bg-xl-card-bg text-input-field-text-color w-full focus:outline-none"
                                         name="amount"
                                         value={sendAmount}
                                         onChange={(e) => setSendAmount(Number(e.target.value))}
@@ -213,7 +212,7 @@ export default function MintToken() {
                     {/* <hr /> */}
                     <div className="py-4 h-full">
                         <div
-                            className="p-6 w-full h-full max-w-2xl mx-auto rounded-2xl"
+                            className="p-6 w-full h-full max-w-2xl mx-auto rounded-2xl bg-bottom-layer-1"
                             style={{ boxShadow: "0 0 14px 0 #00000015 inset" }}
                         >
                             <H5>Balance Check</H5>
@@ -222,7 +221,7 @@ export default function MintToken() {
                                     <PSmall>Mint</PSmall>
                                     <input
                                         type="text"
-                                        className="py-3 px-4 rounded-md bg-bottom-layer-1 text-input-field-text-color w-full focus:outline-none"
+                                        className="py-3 px-4 rounded-md bg-xl-card-bg text-input-field-text-color w-full focus:outline-none"
                                         name="mint"
                                         value={checkMint}
                                         onChange={(e) => setCheckMint(e.target.value)}
@@ -233,7 +232,7 @@ export default function MintToken() {
                                     <PSmall>Address</PSmall>
                                     <input
                                         type="text"
-                                        className="py-3 px-4 rounded-md bg-bottom-layer-1 text-input-field-text-color w-full focus:outline-none"
+                                        className="py-3 px-4 rounded-md bg-xl-card-bg text-input-field-text-color w-full focus:outline-none"
                                         name="address"
                                         value={checkAddress}
                                         onChange={(e) => setCheckAddress(e.target.value)}

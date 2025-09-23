@@ -10,10 +10,8 @@ import { Token, TokenOffers } from "@/types/premarket";
 import Empty from "@/components/Empty";
 import { OffersSkeleton } from "@/components/skeletons/PremarketTokens";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { collateral_assets } from "@/utils/constants";
 import { useApp } from "@/contexts/AppProvider";
 import { testnetTokens } from "@/cross-chain-core";
-import { useState } from "react";
 interface BuySellCardProps {
     type: string;
     offers: TokenOffers[];
@@ -25,7 +23,7 @@ interface BuySellCardProps {
 export default function BuySellCard({ type, offers, tokenInfo, loading }: BuySellCardProps) {
     const { account } = useWallet();
     const { openDrawer } = useDrawer();
-    const { sourceChain, tokenPrices } = useApp()
+    const { tokenPrices } = useApp()
 
     if (loading) return <OffersSkeleton />
     if (offers.length === 0) return <Empty title={`No ${type === 'buy' ? 'buying' : 'selling'} offers.`} />

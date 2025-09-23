@@ -14,17 +14,6 @@ const serialize = (data: any) =>
 export const getUserData = async (c: Context) => {
   try {
     const { userAddr } = c.req.param()
-    // const offers = await prisma.premarketOffer.findMany({
-    //   where: {
-    //     created_by: userAddr
-    //   }
-    // })
-    // const orders = await prisma.premarketOrder.findMany({
-    //   where: {
-    //     created_by: userAddr
-    //   }
-    // })
-
     const [offers, orders] = await Promise.all([
       prisma.premarketOffer.findMany({ where: { created_by: userAddr } }),
       prisma.premarketOrder.findMany({ where: { created_by: userAddr } }),
@@ -142,10 +131,6 @@ export const getUserPremarketTokens = async (c: Context) => {
     return c.json({ error: `failed to get user tokens: ${err}` }, 500)
   }
 }
-
-
-
-
 
 //=====================================================================
 //=====================================================================

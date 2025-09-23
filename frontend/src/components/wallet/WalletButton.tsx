@@ -42,7 +42,7 @@ export function WalletButton() {
     if (!account)
         return (
             <>
-                <Button type="button" onClick={() => setOpen(true)} 
+                <Button type="button" onClick={() => setOpen(true)}
                 // size={isMobile ? "sm" : "default"}
                 >
                     {isMobile ? <Wallet className="h-5 w-5" /> : "Connect Wallet"}

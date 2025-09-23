@@ -16,11 +16,11 @@ async function getPremarketTokens(
     sortOrder: string,
     network: number,
 ) {
-    return (await api.get(`${backendUrl}/premarket/tokens?search=${search}&limit=${limit}&offset=${offset}&sort_order=${sortOrder}&network=${network}`))
+    return (await api.get(`/premarket/tokens?search=${search}&limit=${limit}&offset=${offset}&sort_order=${sortOrder}&network=${network}`))
 }
 
 async function getTokenInfo(tokenAddr: string) {
-    return (await api.get(`${backendUrl}/premarket/token/${tokenAddr}`))
+    return (await api.get(`/premarket/token/${tokenAddr}`))
 }
 
 async function getOffers(
@@ -32,11 +32,11 @@ async function getOffers(
     offset: number,
     limit: number
 ) {
-    return (await api.get(`${backendUrl}/premarket/offers/${tokenAddr}?userAddr=${userAddr}&collateral=${collateral}&filltype=${filltype}&is_buy=${is_buy}&offset=${offset}&limit=${limit}`))
+    return (await api.get(`/premarket/offers/${tokenAddr}?userAddr=${userAddr}&collateral=${collateral}&filltype=${filltype}&is_buy=${is_buy}&offset=${offset}&limit=${limit}`))
 }
 
 async function getUserData(accountAddr: string) {
-    return (await api.get(`${backendUrl}/dashboard/userdata/${accountAddr}`))
+    return (await api.get(`/dashboard/userdata/${accountAddr}`))
 }
 
 async function getUserPremarketTokens(
@@ -45,7 +45,7 @@ async function getUserPremarketTokens(
     offset: number,
     status: string,
 ) {
-    return (await api.get(`${backendUrl}/dashboard/premarket_tokens/${accountAddr}?limit=${limit}&offset=${offset}&status=${status}`))
+    return (await api.get(`/dashboard/premarket_tokens/${accountAddr}?limit=${limit}&offset=${offset}&status=${status}`))
 }
 
 async function getUserOffers(
@@ -56,7 +56,7 @@ async function getUserOffers(
     offset: number,
     limit: number,
 ) {
-    return (await api.get(`${backendUrl}/dashboard/token_offers/${tokenAddr}?account_addr=${accountAddr}&offer_status=${offer_status}&offer_type=${offer_type}&offset=${offset}&limit=${limit}`))
+    return (await api.get(`/dashboard/token_offers/${tokenAddr}?account_addr=${accountAddr}&offer_status=${offer_status}&offer_type=${offer_type}&offset=${offset}&limit=${limit}`))
 }
 
 async function getUserOffersData(
@@ -67,17 +67,17 @@ async function getUserOffersData(
     offset: number,
     limit: number,
 ) {
-    return (await api.get(`${backendUrl}/dashboard/offers/${tokenAddr}?account_addr=${accountAddr}&offer_status=${offer_status}&offer_type=${offer_type}&offset=${offset}&limit=${limit}`))
+    return (await api.get(`/dashboard/offers/${tokenAddr}?account_addr=${accountAddr}&offer_status=${offer_status}&offer_type=${offer_type}&offset=${offset}&limit=${limit}`))
 }
 
 async function getTokenPrice(
     symbol: string
 ) {
-    return (await api.get(`${backendUrl}/price/get/${symbol}`))
+    return (await api.get(`/price/get/${symbol}`))
 }
 
-async function getCrossChainTokens(chain:number){
-    return (await api.get(`${backendUrl}/premarket/cc_tokens?chain=${chain}`))
+async function getCrossChainTokens(chain: number) {
+    return (await api.get(`/premarket/cc_tokens?chain=${chain}`))
 }
 
 const backendApi = {

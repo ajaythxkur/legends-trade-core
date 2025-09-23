@@ -1,16 +1,16 @@
 export interface Token {
-    token_addr: String
-    name: String
-    symbol: String
-    website?: String
-    twitter?: String
-    telegram?: String
+    token_addr: string
+    name: string
+    symbol: string
+    website?: string
+    twitter?: string
+    telegram?: string
     settle_duration: BigInt
     temp_starts_at?: BigInt
     temp_ends_at?: BigInt
     settle_started_at?: BigInt
     status: number
-    fa?: String
+    fa?: string
     createdAt: Date
     updatedAt: Date
     chain_type: number;
@@ -22,8 +22,11 @@ export interface Token {
     volAll: number;
     vol24h: number;
     priceChange: number;
+    vol24hChange: number;
     cross_chain_address: string;
+
     lastPriceUSD: number
+    lastPriceCollateral:string
 }
 
 export interface TokenOffers {
@@ -45,13 +48,13 @@ export interface TokenOffers {
 
 
 export interface TokenOrder {
-    order_addr: String
-    token_addr: String
-    offer_addr: String
-    buyer: String
-    seller: String
+    order_addr: string
+    token_addr: string
+    offer_addr: string
+    buyer: string
+    seller: string
     amount: BigInt
-    created_by: String
+    created_by: string
     ts: BigInt
     is_settled: Boolean
     is_claimed: Boolean

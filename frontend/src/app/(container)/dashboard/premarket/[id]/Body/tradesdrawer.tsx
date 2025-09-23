@@ -5,7 +5,6 @@ import { P, PExtraSmall, PMedium, PSmall } from "@/components/ui/typography";
 import { Info } from "lucide-react";
 import { RiArrowRightDoubleFill } from "react-icons/ri";
 import { Token, TokenOffers, TokenOrder } from "@/types/premarket";
-import { truncateAddress } from "@aptos-labs/ts-sdk";
 import dayjs from "dayjs";
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useCountdown } from "../../../../../../components/Countdown";
@@ -27,7 +26,7 @@ interface TradesDrawerPrps {
     collTokenPrice: number
     collateralToken: TokenConfig
 }
-export default function TradesDrawer({ offer, orders, tokenInfo, collateral, collTokenPrice, collateralToken }: TradesDrawerPrps) {
+export default function TradesDrawer({ offer, orders, tokenInfo, collTokenPrice, collateralToken }: TradesDrawerPrps) {
     const { account, signAndSubmitTransaction } = useWallet()
     const { closeDrawer } = useDrawer();
     const filled_amount = Number(offer.filled_amount) / 10000;
@@ -145,6 +144,7 @@ export default function TradesDrawer({ offer, orders, tokenInfo, collateral, col
                                 <div className="flex justify-between items-center">
                                     <PSmall className="text-tertiary-text-color">Cancel Offer</PSmall>
                                     <Button
+                                        size="sm"
                                         className="px-3  py-2 text-sm"
                                         onClick={() => handleCancelOffer(offer.offer_addr.toString())}
                                     >

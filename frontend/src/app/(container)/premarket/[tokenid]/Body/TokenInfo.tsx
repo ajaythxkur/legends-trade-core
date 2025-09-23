@@ -2,11 +2,14 @@
 import CountDownBadge from "@/components/CountDownBadge";
 import { Badge } from "@/components/ui/badge";
 import { H5, H6, PExtraSmall, PLarge, PSmall } from "@/components/ui/typography";
+import { useApp } from "@/contexts/AppProvider";
+import { testnetTokens, TokenConfig } from "@/cross-chain-core";
 import { Token } from "@/types/premarket";
 import { chainIcons } from "@/utils/constants";
-import { formatDateTime, formatPrice } from "@/utils/helpers";
+import { formatDateTime } from "@/utils/helpers";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { FaXTwitter } from "react-icons/fa6";
 import { LuGlobe } from "react-icons/lu";
 interface TokenInfoProps {
@@ -14,14 +17,37 @@ interface TokenInfoProps {
 }
 
 export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
+    const { sourceChain, tokenPrices } = useApp();
+    const [collateralToken, setCollaeralToken] = useState<TokenConfig>()
+    // const vol24h = formatPrice(tokenInfo.vol24h);
+    // const totalVolume = formatPrice(tokenInfo.volAll);
 
     // const lastprice = formatPrice(tokenInfo.lastPrice);
-    const lastprice = (tokenInfo.lastPrice / Math.pow(10, 8)) * 4.3;
-    const formatlastPrice = Math.round(lastprice * 100) / 100;
-    // const price = (Number(tokenInfo.lastPrice) / Math.pow(10, Number(collateralToken?.decimals))) * collTokenPrice;
+    // const lastprice = (tokenInfo.lastPrice / Math.pow(10, 8)) * 4.3;
+    // const formatlastPrice = Math.round(lastprice * 100) / 100;
 
-    const vol24h = formatPrice(tokenInfo.vol24h);
-    const totalVolume = formatPrice(tokenInfo.volAll);
+    const last_price_coll = tokenInfo.lastPriceCollateral;
+    useEffect(() => {
+        if (last_price_coll) {
+            const collateralTokens = sourceChain ? testnetTokens[sourceChain] : testnetTokens["Aptos"]
+            const coll = collateralTokens.find(
+                (coll) => coll.tokenId.address.toLowerCase() === last_price_coll.toLowerCase()
+            );
+            setCollaeralToken(coll)
+        }
+    }, [])
+
+    if (!tokenPrices) {
+        console.warn("Token prices not loaded yet");
+        return null;
+    }
+    const collTokenPrice = collateralToken ? tokenPrices[collateralToken.symbol] : 0;
+    const lastprice = (tokenInfo.lastPrice / Math.pow(10, Number(collateralToken?.decimals))) * collTokenPrice;
+    const formatlastPrice = Math.round(lastprice * 100) / 100;
+
+    const vol24h = (tokenInfo.vol24h / Math.pow(10, 8)) * collTokenPrice;
+    // const totalVolume = (tokenInfo.volAll / Math.pow(10, 8)) * collTokenPrice;
+
     const startsAt = formatDateTime(Number(tokenInfo.temp_starts_at));
     const endsAt = formatDateTime(Number(tokenInfo.temp_starts_at));
 
@@ -40,7 +66,7 @@ export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
 
             <div className="text-center">
                 <div className="flex items-center gap-2">
-                    <H6>$ {formatlastPrice}</H6>
+                    <H6>$ {formatlastPrice ? formatlastPrice : 0}</H6>
                     {
                         tokenInfo.priceChange > 0 ?
                             <Badge variant="positive">+ {tokenInfo.priceChange.toFixed(2)}%</Badge>
@@ -53,7 +79,13 @@ export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
 
             <div className="text-center">
                 <div className="flex items-center gap-2">
-                    <PLarge>$ {vol24h.toFixed(4)}</PLarge>
+                    <PLarge>$ {vol24h.toFixed(2)}</PLarge>
+                    {
+                        tokenInfo.vol24hChange > 0 ?
+                            <Badge variant="positive">+ {tokenInfo.vol24hChange.toFixed(2)}%</Badge>
+                            :
+                            <Badge variant="negative">{tokenInfo.vol24hChange.toFixed(2)}%</Badge>
+                    }
                     {/* <Badge variant="negative">- 3.2%</Badge> */}
                 </div>
                 <PSmall className="text-sm text-tertiary-text-color">24h Volume</PSmall>
@@ -61,7 +93,8 @@ export default function TokenInfo({ tokenInfo }: TokenInfoProps) {
 
             <div className="text-center">
                 <div className="flex items-center gap-2">
-                    <PLarge>$ {totalVolume.toFixed(4)}</PLarge>
+                    {/* <PLarge>$ {totalVolume.toFixed(2)}</PLarge> */}
+                    <PLarge>$ {tokenInfo.volAll.toFixed(2)}</PLarge>
                     {/* <Badge variant="positive">+ 3.2%</Badge> */}
                 </div>
                 <PSmall className="text-sm text-tertiary-text-color">Total volume</PSmall>

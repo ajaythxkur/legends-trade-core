@@ -68,7 +68,7 @@ export default function Filters({ setSortOrder, setNetwork, setDebounce, debounc
                         value={debounce}
                         onChange={(e) => setDebounce(e.target.value)}
                         placeholder="Search by token name"
-                        className="pe-4 py-2 md:py-3 focus:outline-none w-full"
+                        className="pe-4 py-2 md:py-3.5 focus:outline-none w-full"
                     />
                 </div>
 

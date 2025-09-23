@@ -1,5 +1,5 @@
-import Body from "./Body";
+import DepositModal from "./Body";
 
 export default function Deposit(){
-return <Body/>
+return <DepositModal/>
 }

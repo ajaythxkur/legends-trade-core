@@ -32,8 +32,8 @@ export default function RootLayout({
         <ThemeProvider>
           <AutoConnectProvider>
             <WalletProvider>
-              <BalanceProvider dappNetwork={NETWORK}>
 
+              <BalanceProvider dappNetwork={NETWORK}>
                 <WalletContextProvider>
                   <AppProvider>
                     <DrawerProvider>

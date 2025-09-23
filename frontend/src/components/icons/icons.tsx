@@ -56,6 +56,7 @@ export const RewardsSvg = ({ className = "", ...props }: IconProps) => (
 );
 
 
+
 // Optional: dynamic usage
 // const icons = {
 //   coins: PremarketSvg,

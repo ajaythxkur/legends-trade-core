@@ -9,6 +9,12 @@ import priceRoutes from './routes/priceRoutes.js'
 
 const app = new Hono()
 app.use("/*", cors({ origin: "http://localhost:3000" }))
+// app.use('*', cors({
+//   origin: 'http://localhost:3000', // or '*' for dev
+//   allowHeaders: ['Content-Type', 'Authorization'],
+//   allowMethods: ['GET', 'POST', 'OPTIONS'],
+//   maxAge: 86400, // 1 day preflight cache
+// }))
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')

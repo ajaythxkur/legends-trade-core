@@ -33,7 +33,7 @@ import { Drawer, DrawerContent, DrawerTitle, } from "@/components/ui/drawer"
 
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { TabsContent } from "../ui/tabs";
-import { H3, H4 } from "../ui/typography";
+import { H4 } from "../ui/typography";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WalletProps {
@@ -80,7 +80,7 @@ interface ConnectWalletDialogProps extends WalletSortingOptions {
 }
 
 function ConnectWalletDialog({
-    close,
+    // close,
     ...walletSortingOptions
 }: ConnectWalletDialogProps) {
     const { wallets = [], notDetectedWallets = [] } = useWallet();

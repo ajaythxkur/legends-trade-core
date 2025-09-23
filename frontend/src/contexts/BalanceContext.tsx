@@ -62,7 +62,6 @@ export function BalanceProvider({
         address,
         "Aptos",
         token,
-        // '0x69091fbab5f7d635ee7ac5098cf0c1efbe31d68fec0f2cd565e8d168daf52832',
         decimals
       );
       console.log(`Aptos balance : ${address}, ${token}, ${decimals}}`)

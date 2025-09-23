@@ -34,7 +34,7 @@ interface CreateOfferModalProps {
 }
 export default function CreateOfferModal({ open, setOpen, token, tokenAddr, balance, collateralTokens, collateralToken, onCollateralChange, priceInUsd }: CreateOfferModalProps) {
     const { sourceChain, sponsorAccount, provider } = useApp()
-    const { aptosBalance, refetchBalancesWithDelay } = useBalance()
+    const {  refetchBalancesWithDelay } = useBalance()
     const { connected, account, signAndSubmitTransaction, wallet, signTransaction } = useWallet();
     const [isBuy, setIsBuy] = useState(true);
     const [tokenprice, setTokenPrice] = useState<string>('');
@@ -279,13 +279,13 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                 {/* Buy/Sell Toggle */}
                 <div className="flex items-center mb-4 bg-secondary-button-color w-fit rounded m-auto mt-4">
                     <div onClick={() => setIsBuy(true)}
-                        className={`p-[14px] rounded transition-colors text-base text-teryiary-action-text-color cursor-pointer 
+                        className={`p-[14px] rounded transition-colors text-base text-action-text-color cursor-pointer 
                                     ${isBuy ? 'bg-primary-button-color text-black' : ''}`}>
                         Want to Buy
                     </div>
 
                     <div onClick={() => setIsBuy(false)}
-                        className={`p-[14px] rounded transition-colors text-base text-teryiary-action-text-color cursor-pointer 
+                        className={`p-[14px] rounded transition-colors text-base text-action-text-color cursor-pointer 
                                     ${!isBuy ? 'bg-primary-button-color text-black' : ''}`}>
                         Want to sell
                     </div>

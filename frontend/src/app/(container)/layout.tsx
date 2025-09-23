@@ -8,8 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useApp } from "@/contexts/AppProvider";
-import DepositModal from "@/components/DepositWithdraw";
-import Body from "./deposit/Body";
+import DepositModal from "./deposit/Body";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const { account } = useWallet()
@@ -37,8 +36,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         <div className="flex gap-4 items-center">
                             {
                                 account && sourceChain !== "Aptos" &&
-                                // <DepositModal />
-                                <Body />
+                                <>
+                                    <DepositModal />
+                                    {/* <Button variant="ghost" asChild>
+                                        <Link href="/tokenbridge">Token Bridge</Link>
+                                    </Button> */}
+                                </>
                             }
                             <WalletButton />
                         </div>

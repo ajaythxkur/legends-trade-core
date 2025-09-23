@@ -173,6 +173,7 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                         tokenStatus === 3 ?
                                             <TableCell className="text-center">
                                                 <Button
+                                                    size="sm"
                                                     className="px-4 py-1.75"
                                                     onClick={() => handleCancelOrder(order.order_addr.toString())}
                                                 >
@@ -191,6 +192,7 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                                 ) : isBuyer ? (
                                                     // Buyer logic -- can claim only if seller didn't settle with settle duration
                                                     <Button
+                                                        size="sm"
                                                         className="px-4 py-1.75"
                                                         // disabled={!shouldEnableClaimForBuyer || order.is_settled }
                                                         disabled={status === 'Not Started' || status === 'Running' || order.is_settled}
@@ -201,6 +203,7 @@ export default function Orders({ offer, orders, status, tokenStatus }: OrderProp
                                                 ) : isSeller ? (
                                                     // Seller logic - can settle within settle duration only.
                                                     <Button
+                                                        size="sm"
                                                         className="px-4 py-1.75"
                                                         disabled={isSettlementEnded || status === 'Not Started' || order.is_settled}
                                                         onClick={() => handleSettleOrder(order.order_addr.toString())}

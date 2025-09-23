@@ -6,8 +6,9 @@ import backendApi from "@/utils/backendApi";
 import { Token } from "@/types/premarket";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { H4, H5 } from "@/components/ui/typography";
 
-export default function Body() {
+export default function DepositModal() {
     const [crossChainTokens, setCrossChainTokens] = useState<Token[]>([]);
     const getCrossChainTokens = useCallback(async () => {
         try {
@@ -36,8 +37,8 @@ export default function Body() {
     return (
         <>
             <Dialog>
-                <DialogTrigger className="bg-secondary-button-color py-3.25 px-6 rounded">Deposit/Withdraw</DialogTrigger>
-                <DialogContent className="bg-bottom-layer-2 p-4">
+                <DialogTrigger className="bg-secondary-button-color py-3.25 px-6 rounded text-action-text-color">Deposit/Withdraw</DialogTrigger>
+                <DialogContent className="bg-bottom-layer-2 p-6">
                     <DialogTitle></DialogTitle>
                     <Tabs defaultValue="deposit" className="mt-4">
                         <TabsList>
@@ -60,9 +61,6 @@ export default function Body() {
                     </Tabs>
                 </DialogContent>
             </Dialog >
-
-
-
         </>
     )
     // return (

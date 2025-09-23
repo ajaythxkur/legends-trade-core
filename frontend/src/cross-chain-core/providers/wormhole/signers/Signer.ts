@@ -4,6 +4,8 @@ import {
   Chain,
   TxHash,
   SignAndSendSigner,
+  ChainContext,
+  chainToPlatform,
 } from "@wormhole-foundation/sdk";
 import { SolanaUnsignedTransaction } from "@wormhole-foundation/sdk-solana";
 import { AdapterWallet } from "@aptos-labs/wallet-adapter-core";
@@ -28,8 +30,7 @@ import { AptosUnsignedTransaction } from "@wormhole-foundation/sdk-aptos";
 import { GasStationApiKey } from "../types";
 import { Account } from "@aptos-labs/ts-sdk";
 export class Signer<N extends Network, C extends Chain>
-  implements SignAndSendSigner<N, C>
-{
+  implements SignAndSendSigner<N, C> {
   _chain: ChainConfig;
   _address: string;
   _options: any;
@@ -83,6 +84,28 @@ export class Signer<N extends Network, C extends Chain>
     }
     return txHashes;
   }
+
+
+  // static async fromChain<N extends Network, C extends Chain>(
+  //   chain: Chain,
+  //   address: string,
+  //   walletType: TransferWallet,
+  //   walletProvider: WormholeConnectWalletProvider,
+  // ): Promise<Signer<N, C>> {
+  //   const wh = await getWormholeContextV2();
+  //   const chainContextV2 = wh
+  //     .getPlatform(chainToPlatform(chain))
+  //     .getChain(chain) as ChainContext<N, C>;
+
+  //   return new SDKv2Signer(
+  //     chain,
+  //     chainContextV2,
+  //     address,
+  //     walletType,
+  //     walletProvider,
+  //   );
+  // }
+
 }
 
 export const signAndSendTransaction = async (

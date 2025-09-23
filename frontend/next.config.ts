@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     FEE_PAYER_ACCOUNT_PRIVATE_KEY: process.env.FEE_PAYER_ACCOUNT_PRIVATE_KEY,
     APTOS_API_KEY_TESNET: process.env.APTOS_API_KEY_TESNET,
     APTOS_API_KEY_DEVNET: process.env.APTOS_API_KEY_DEVNET,
+    SOL_PRIVATE_KEY: process.env.SOL_PRIVATE_KEY,
   },
   images: {
     remotePatterns: [
@@ -18,6 +19,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  // webpack: (config, { isServer }) => {
+  //   if (!isServer) {
+  //     config.resolve.fallback = {
+  //       ...config.resolve.fallback,
+  //       buffer: require.resolve('buffer'),
+  //       util: require.resolve('util'),
+  //     };
+  //   }
+  //   return config;
+  // },
+
 };
 
 export default nextConfig;

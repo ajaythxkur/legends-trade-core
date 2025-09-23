@@ -39,7 +39,7 @@ const MobileFilter = ({ fillType, setFillType, collateral, setCollateral }: Filt
     const fillTypes = ['all', 'partial', 'full']
     return (
         <>
-            <Button variant="ghost" className="md:hidden w-fit" onClick={() => setOpen(!open)}>
+            <Button variant="ghost" className="p-3.5 md:hidden w-fit" onClick={() => setOpen(!open)}>
                 <LuFilter className="h-4 w-4" />
             </Button>
 
