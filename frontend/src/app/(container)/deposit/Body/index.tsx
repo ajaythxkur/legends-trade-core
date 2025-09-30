@@ -13,7 +13,7 @@ export default function DepositModal() {
     const getCrossChainTokens = useCallback(async () => {
         try {
             const response = await backendApi.getCrossChainTokens(1);
-            setCrossChainTokens(response.data)
+            setCrossChainTokens(response.data ?? [])
         } catch (err) {
             console.log(err)
         }

@@ -8,7 +8,7 @@ import dashRoutes from './routes/dashboardRoutes.js'
 import priceRoutes from './routes/priceRoutes.js'
 
 const app = new Hono()
-app.use("/*", cors({ origin: "http://localhost:3000" }))
+app.use("/*", cors({ origin: ["http://localhost:3000", "http://localhost:3001"] }))
 // app.use('*', cors({
 //   origin: 'http://localhost:3000', // or '*' for dev
 //   allowHeaders: ['Content-Type', 'Authorization'],

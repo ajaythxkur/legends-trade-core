@@ -11,8 +11,8 @@ import { BalanceProvider } from "@/contexts/BalanceContext";
 import { NETWORK } from "@/utils/env";
 import WalletContextProvider from "@/contexts/WalletProvider";
 
-import { Inter } from 'next/font/google'
-const font = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+import { Outfit } from 'next/font/google'
+const font = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 // import { Inter } from "@/components/fonts";
 
 export const metadata: Metadata = {

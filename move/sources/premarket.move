@@ -183,7 +183,7 @@ module legends_trade::premarket {
     /// Token premarket is not cancelled
     const ERR_TOKEN_STATUS_NOT_CANCELLED: u64 = 21;
 
-    const SEED: vector<u8> = b"humankind";
+    const SEED: vector<u8> = b"pre-market";
     const BASIS_POINT_MAX: u64 = 10000;
 
     // This function is only called once
