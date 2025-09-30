@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --background: #080C06;
+  --foreground: #080C06;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-syne: var(--font-syne);
+  --font-poppins: var(--font-poppins);
+
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+ 
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #080C06;
+    --foreground: #080C06;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
+  padding-inline: 16px;
+  padding-top: 16px;
+  scroll-behavior: smooth;
+  
+}
+
+/* Apply Syne font to all heading tags */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-syne), Arial, Helvetica, sans-serif;
+}
