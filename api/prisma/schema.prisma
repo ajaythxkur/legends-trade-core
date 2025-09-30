@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PremarketToken {
+  token_addr        String           @id @map("token_addr") @db.VarChar(66)
+  name              String           @db.VarChar
+  symbol            String           @db.VarChar
+  image             String           @db.VarChar
+  website           String?          @db.VarChar
+  twitter           String?          @db.VarChar
+  telegram          String?          @db.VarChar
+  settle_duration   BigInt
+  temp_starts_at    BigInt?
+  temp_ends_at      BigInt?
+  settle_started_at BigInt?
+  status            Int              @default(0)
+  fa                String?          @db.VarChar(66)
+  chain_type        Int
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt         DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  txn_version       BigInt
+  cross_chain_address String?        @db.VarChar(66)
+  offers            PremarketOffer[]
+  orders            PremarketOrder[]
+
+  @@map("premarket_tokens")
+}
+
+model PremarketOffer {
+  offer_addr       String           @id @map("offer_addr") @db.VarChar(66)
+  token_addr       String           @db.VarChar(66)
+  price            BigInt
+  amount           BigInt
+  is_buy           Boolean
+  is_full_match    Boolean
+  created_by       String           @db.VarChar(66)
+  ts               BigInt
+  filled_amount    BigInt
+  is_active        Boolean          @default(true)
+  txn_version      BigInt
+  collateral_asset String           @db.VarChar(66)
+  token            PremarketToken   @relation(fields: [token_addr], references: [token_addr], onDelete: Cascade, map: "fk_offer_token")
+  orders           PremarketOrder[]
+
+  @@index([token_addr], map: "idx_premarket_offers_token")
+  @@map("premarket_offers")
+}
+
+model PremarketOrder {
+  order_addr   String         @id @map("order_addr") @db.VarChar(66)
+  token_addr   String         @db.VarChar(66)
+  offer_addr   String         @db.VarChar(66)
+  buyer        String         @db.VarChar(66)
+  seller       String         @db.VarChar(66)
+  amount       BigInt
+  created_by   String         @db.VarChar(66)
+  ts           BigInt
+  is_settled   Boolean        @default(false)
+  is_claimed   Boolean        @default(false)
+  is_cancelled Boolean        @default(false)
+  txn_version  BigInt
+  offer        PremarketOffer @relation(fields: [offer_addr], references: [offer_addr], onDelete: Cascade, map: "fk_order_offer")
+  token        PremarketToken @relation(fields: [token_addr], references: [token_addr], onDelete: Cascade, map: "fk_order_token")
+
+  @@index([offer_addr], map: "idx_premarket_orders_offer")
+  @@index([token_addr], map: "idx_premarket_orders_token")
+  @@map("premarket_orders")
+}
+
+model diesel_schema_migrations {
+  version String   @id @db.VarChar(50)
+  run_on  DateTime @default(now()) @db.Timestamp(6)
+
+  @@map("__diesel_schema_migrations")
+}
+
+model ledger_infos {
+  chain_id BigInt @id
+}
+
+model module_upgrade_history {
+  module_addr        String @db.VarChar(300)
+  module_name        String @db.VarChar(300)
+  upgrade_number     BigInt
+  module_bytecode    Bytes
+  module_source_code String
+  module_abi         Json   @db.Json
+  tx_version         BigInt
+
+  @@id([module_addr, module_name, upgrade_number])
+}
+
+model package_upgrade_history {
+  package_addr     String @db.VarChar(300)
+  package_name     String @db.VarChar(300)
+  upgrade_number   BigInt
+  upgrade_policy   BigInt
+  package_manifest String
+  source_digest    String
+  tx_version       BigInt
+
+  @@id([package_addr, package_name, upgrade_number])
+}
+
+model processor_status {
+  processor                  String    @id @db.VarChar(50)
+  last_success_version       BigInt
+  last_updated               DateTime  @default(now()) @db.Timestamp(6)
+  last_transaction_timestamp DateTime? @db.Timestamp(6)
+}
