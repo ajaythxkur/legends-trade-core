@@ -16,7 +16,7 @@ import { moduleAddress } from "@/utils/env"
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { IoCheckmark } from "react-icons/io5"
 import { useApp } from "@/contexts/AppProvider"
-import { InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk"
+import { Deserializer, InputGenerateTransactionPayloadData, SimpleTransaction } from "@aptos-labs/ts-sdk"
 import { TokenConfig } from "@/cross-chain-core"
 import { useBalance } from "@/contexts/BalanceContext"
 import { WalletButton } from "@/components/wallet/WalletButton"
@@ -214,8 +214,8 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                 });
 
                 const response = await signTransaction({
-                    transactionOrPayload: rawTransaction,
-                });
+                    transactionOrPayload: rawTransaction
+                }); 
 
                 const sponsorAuthenticator = aptosClient.transaction.signAsFeePayer({
                     signer: sponsorAccount,
@@ -229,7 +229,7 @@ export default function CreateOfferModal({ open, setOpen, token, tokenAddr, bala
                         feePayerAuthenticator: sponsorAuthenticator,
                     }
                 );
-
+                console.log(txnSubmitted, "txnSubmitted")
                 hash = txnSubmitted.hash;
             } else {
                 const response = await signAndSubmitTransaction({ data: transactionData });

@@ -9,26 +9,26 @@ datasource db {
 }
 
 model PremarketToken {
-  token_addr        String           @id @map("token_addr") @db.VarChar(66)
-  name              String           @db.VarChar
-  symbol            String           @db.VarChar
-  image             String           @db.VarChar
-  website           String?          @db.VarChar
-  twitter           String?          @db.VarChar
-  telegram          String?          @db.VarChar
-  settle_duration   BigInt
-  temp_starts_at    BigInt?
-  temp_ends_at      BigInt?
-  settle_started_at BigInt?
-  status            Int              @default(0)
-  fa                String?          @db.VarChar(66)
-  chain_type        Int
-  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt         DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  txn_version       BigInt
-  cross_chain_address String?        @db.VarChar(66)
-  offers            PremarketOffer[]
-  orders            PremarketOrder[]
+  token_addr          String           @id @map("token_addr") @db.VarChar(66)
+  name                String           @db.VarChar
+  symbol              String           @db.VarChar
+  image               String           @db.VarChar
+  website             String?          @db.VarChar
+  twitter             String?          @db.VarChar
+  telegram            String?          @db.VarChar
+  settle_duration     BigInt
+  temp_starts_at      BigInt?
+  temp_ends_at        BigInt?
+  settle_started_at   BigInt?
+  status              Int              @default(0)
+  fa                  String?          @db.VarChar(66)
+  chain_type          Int
+  createdAt           DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt           DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  cross_chain_address String?          @db.VarChar(66)
+  txn_version         BigInt
+  offers              PremarketOffer[]
+  orders              PremarketOrder[]
 
   @@map("premarket_tokens")
 }

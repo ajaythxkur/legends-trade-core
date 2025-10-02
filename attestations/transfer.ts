@@ -16,9 +16,7 @@ async function transferTokens() {
     // Define token and amount to transfer
     const tokenId: TokenId = Wormhole.tokenId(
         sourceChain.chain,
-        // 'INSERT_TOKEN_CONTRACT_ADDRESS'
-        // '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'
-        '3H75WaXd2RVJpU3AdPQEKB1j7KZ7y16rcJ3MKLjck9ao' //trump
+        'DQxAbjHwsWD1cWsTmxuJiEGna3kBhjpiPJTNXDNkBsbW' 
     );
     // Replace with amount you want to transfer
     // This is a human-readable number, e.g., 0.2 for 0.2 tokens

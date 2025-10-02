@@ -418,7 +418,8 @@ export const updateCrossChainAddress = async (c: Context) => {
 //get tokens having cross chain address.
 export const getCrossChainTokens = async (c: Context) => {
     try {
-        const { chain } = c.req.query()
+        const { chain } = c.req.query();
+        if(!chain) throw new Error("Chain is required");
         const tokens = await prisma.premarketToken.findMany({
             where: {
                 cross_chain_address: { not: null },

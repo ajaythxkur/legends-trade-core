@@ -7,7 +7,7 @@ const Hero = () => {
     return (
         <Section className='relative   overflow-hidden' id='hero'>
             <div className='space-y-6'>
-                <PLarge className='text-[#399F03]'>A centralized experience across decenvtralized markets.</PLarge>
+                <PLarge className='text-[#399F03]'>A centralized experience across decentralized markets.</PLarge>
                 <H1 weight='regular' className='font-bold sticky z-1'>Speculate. Trade. <br /> Launch.</H1>
             </div>
             <PXLarge weight='medium' className='text-[#525450] mt-4'>Empowering your token launch journey with innovative solutions.</PXLarge>

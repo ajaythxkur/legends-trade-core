@@ -38,8 +38,8 @@ const Problem = () => {
                 </div>
                 <div className='p-6 md:p-8 flex gap-2  lg:min-w-sm w-full text-left bg-[#E7F7FE] rounded-[40px] flex-col'>
                     <PiSmileySad size={40} color='#1CA6EC' />
-                    <PXXLarge weight='medium'>Points are locked.</PXXLarge>
-                    <PXLarge weight='regular'>You earn them, but can’t use or trade them.</PXLarge>
+                    <PXXLarge weight='medium'>IDOs are botted.</PXXLarge>
+                    <PXLarge weight='regular'>Whales and bots front-run public launches.</PXLarge>
                 </div>
             </div>
         </Section>

@@ -98,6 +98,8 @@ diesel::table! {
         chain_type -> Int4,
         created_at -> Timestamp,
         updated_at -> Timestamp,
+        #[max_length = 66]
+        cross_chain_address -> Nullable<Varchar>,
         txn_version -> Int8,
     }
 }

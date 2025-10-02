@@ -21,11 +21,7 @@ async function attestToken() {
     // Define the token you want to attest (Solana mint address)
     const tokenId: TokenId = Wormhole.tokenId(
         sourceChain.chain,
-        // 'FQcy4SXTgN1YV5K7Zmg6NpkiNPEFVLUQwNPeR7ANcB3s'. //500
-        // '2fV8X8NrQvriDDQiUqoLDFzuurF52bejeSrHGQ1qFZ3H'   //300
-        // '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU' // usdc
-        // '3H75WaXd2RVJpU3AdPQEKB1j7KZ7y16rcJ3MKLjck9ao' // mint for trump trump
-        'BZfVyjEZGnHUHTEfdy15xQYT76HzgxcEAe5dqZsjDFZu' // mint for NIG
+        'DQxAbjHwsWD1cWsTmxuJiEGna3kBhjpiPJTNXDNkBsbW' 
     );
 
     // console.log(tokenId)
@@ -35,7 +31,7 @@ async function attestToken() {
         wrappedToken = await wh.getWrappedAsset(destinationChain.chain, tokenId);
         console.log(
             '✅ Token already registered on destination:',
-            wrappedToken.address
+            wrappedToken.address.toString()
         );
     } catch (e) {
         console.log(
@@ -134,7 +130,7 @@ async function attestToken() {
 
                 console.log(
                     `✅ Wrapped token is now available on ${destinationChain.chain}:`,
-                    wrapped.address
+                    wrapped.address.toString()
                 );
                 registered = true;
             } catch {

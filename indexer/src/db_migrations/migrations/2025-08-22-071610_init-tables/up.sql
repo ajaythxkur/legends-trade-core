@@ -16,6 +16,7 @@ CREATE TABLE "premarket_tokens" (
     chain_type       INT NOT NULL,
     created_at        TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at        TIMESTAMP NOT NULL DEFAULT NOW(),
+    cross_chain_address VARCHAR(66),
     txn_version       BIGINT NOT NULL
 );
 
